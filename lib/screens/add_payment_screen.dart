@@ -1,0 +1,258 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
+import '../models/debt_model1.dart';
+import '../providers/debt_provider.dart';
+
+class AddPaymentScreen extends StatefulWidget {
+  final DebtModel debt;
+
+  const AddPaymentScreen({super.key, required this.debt});
+
+  @override
+  State<AddPaymentScreen> createState() => _AddPaymentScreenState();
+}
+
+class _AddPaymentScreenState extends State<AddPaymentScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _amountController = TextEditingController();
+  final _noteController = TextEditingController();
+  
+  bool _isLoading = false;
+  late double _remainingAmount;
+
+  @override
+  void initState() {
+    super.initState();
+    _remainingAmount = widget.debt.amount - widget.debt.paidAmount;
+  }
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _noteController.dispose();
+    super.dispose();
+  }
+
+  String formatCurrency(double amount) {
+    return NumberFormat('#,##0', 'en_US').format(amount);
+  }
+
+  Future<void> _submitPayment() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    final payAmount = double.parse(_amountController.text);
+    final provider = context.read<DebtProvider>();
+
+    try {
+      await provider.addPayment(widget.debt.id!, payAmount);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Payment of ${formatCurrency(payAmount)} TSh recorded'),
+            backgroundColor: Colors.green.shade600,
+          ),
+        );
+        Navigator.of(context).pop(); // Rudi nyuma
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red.shade600,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    bool isBorrow = widget.debt.type == 'borrow';
+    Color mainColor = isBorrow ? Colors.red.shade600 : Colors.green.shade600;
+    String actionText = isBorrow ? 'Pay' : 'Collect';
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('$actionText Payment'),
+        backgroundColor: mainColor,
+        foregroundColor: Colors.white,
+      ),
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            // Card ya Maelezo ya Deni
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          backgroundColor: mainColor.withValues(alpha: 0.1),
+                          child: Icon(Icons.person, color: mainColor),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.debt.name,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                isBorrow ? 'You owe this person' : 'This person owes you',
+                                style: TextStyle(
+                                  color: Colors.grey.shade600,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Divider(height: 24),
+                    _buildDetailRow('Total Amount', formatCurrency(widget.debt.amount)),
+                    const SizedBox(height: 8),
+                    _buildDetailRow('Already Paid', formatCurrency(widget.debt.paidAmount), Colors.green.shade700),
+                    const SizedBox(height: 8),
+                    _buildDetailRow('Remaining', formatCurrency(_remainingAmount), Colors.red.shade600, true),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Amount Input
+            Text(
+              '$actionText Amount',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _amountController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+              ],
+              decoration: InputDecoration(
+                hintText: 'Enter amount',
+                prefixText: 'TSh ',
+                suffixIcon: TextButton(
+                  onPressed: () {
+                    _amountController.text = _remainingAmount.toStringAsFixed(0);
+                  },
+                  child: const Text('Pay All'),
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: mainColor, width: 2),
+                ),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter amount';
+                }
+                final amount = double.tryParse(value);
+                if (amount == null || amount <= 0) {
+                  return 'Enter valid amount';
+                }
+                if (amount > _remainingAmount) {
+                  return 'Amount exceeds remaining ${formatCurrency(_remainingAmount)}';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 20),
+
+            // Note Input
+            Text(
+              'Note (Optional)',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _noteController,
+              maxLines: 3,
+              decoration: InputDecoration(
+                hintText: 'Add a note...',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: mainColor, width: 2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
+
+            // Submit Button
+            SizedBox(
+              height: 50,
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _submitPayment,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: mainColor,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        '$actionText ${formatCurrency(double.tryParse(_amountController.text) ?? 0)} TSh',
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value, [Color? color, bool isBold = false]) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: TextStyle(color: Colors.grey.shade700)),
+        Text(
+          '$value TSh',
+          style: TextStyle(
+            fontWeight: isBold ? FontWeight.bold : FontWeight.w500,
+            color: color ?? Colors.black,
+            fontSize: isBold ? 16 : 14,
+          ),
+        ),
+      ],
+    );
+  }
+}
