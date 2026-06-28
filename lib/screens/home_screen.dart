@@ -167,27 +167,28 @@ class _HomeScreenState extends State<HomeScreen>
             bottom: TabBar(
               controller: _tabController,
               dividerColor: Colors.transparent,
-              indicator: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                color: Colors.white.withValues(alpha: 0.16),
-              ),
-              indicatorPadding: const EdgeInsets.symmetric(
-                horizontal: 10,
-                vertical: 4,
-              ),
-              labelStyle: const TextStyle(fontWeight: FontWeight.w700),
-              labelPadding: const EdgeInsets.symmetric(horizontal: 8),
+              indicatorColor: Colors.white,
+              indicatorWeight: 3,
+              indicatorSize: TabBarIndicatorSize.label,
+              labelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+              unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
               tabs: [
                 Tab(
-                  child: Text(
-                    'LEND\n${formatCurrency(debtProvider.totalLent)}',
-                    textAlign: TextAlign.center,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('LENT'),
+                      Text(formatCurrency(debtProvider.remainingLend), style: const TextStyle(fontSize: 11)),
+                    ],
                   ),
                 ),
                 Tab(
-                  child: Text(
-                    'BORROW\n${formatCurrency(debtProvider.totalBorrow)}',
-                    textAlign: TextAlign.center,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('BORROWED'),
+                      Text(formatCurrency(debtProvider.remainingBorrow), style: const TextStyle(fontSize: 11)),
+                    ],
                   ),
                 ),
               ],
@@ -287,10 +288,10 @@ class _HomeScreenState extends State<HomeScreen>
                             ),
                           ),
                           const SizedBox(height: 8),
-                          if (provider.filterStatus != 'All')
+                          if (provider.filterStatus != 'Active')
                             TextButton.icon(
                               onPressed: () {
-                                provider.setFilterStatus('All');
+                                provider.setFilterStatus('Active');
                                 provider.setSearchQuery('');
                               },
                               icon: const Icon(Icons.clear_all),

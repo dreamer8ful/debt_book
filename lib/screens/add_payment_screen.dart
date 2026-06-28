@@ -18,6 +18,7 @@ class _AddPaymentScreenState extends State<AddPaymentScreen> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _noteController = TextEditingController();
+  DateTime _selectedDate = DateTime.now();
 
   bool _isLoading = false;
   late double _remainingAmount;
@@ -39,6 +40,18 @@ class _AddPaymentScreenState extends State<AddPaymentScreen> {
     return context.read<AppSettingsProvider>().formatCurrency(amount);
   }
 
+  Future<void> _selectDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2030),
+    );
+    if (picked != null) {
+      setState(() => _selectedDate = picked);
+    }
+  }
+
   Future<void> _submitPayment() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -54,6 +67,7 @@ class _AddPaymentScreenState extends State<AddPaymentScreen> {
         note: _noteController.text.trim().isEmpty
             ? null
             : _noteController.text.trim(),
+        date: _selectedDate,
       );
 
       if (mounted) {
@@ -207,6 +221,23 @@ class _AddPaymentScreenState extends State<AddPaymentScreen> {
                         }
                         return null;
                       },
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Transaction Date',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: Icon(Icons.calendar_today, color: mainColor),
+                      title: Text(
+                        context.read<AppSettingsProvider>().formatDate(_selectedDate),
+                      ),
+                      trailing: const Icon(Icons.edit, size: 16),
+                      onTap: _selectDate,
                     ),
                     const SizedBox(height: 20),
                     Text(

@@ -156,343 +156,208 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _lockStateInitialized = true;
     }
 
-    final selectedCurrency = _currencyOptions.firstWhere(
-      (option) => option['code'] == settings.currencyCode,
-      orElse: () => _currencyOptions.first,
-    );
-
-    final selectedDateFormat = _dateFormats.firstWhere(
-      (option) => option['pattern'] == settings.dateFormatPattern,
-      orElse: () => _dateFormats.first,
-    );
-
     return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         title: const Text('Settings'),
-        flexibleSpace: const DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF0D6B8A), Color(0xFF0A536B)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
+        backgroundColor: const Color(0xFF0D6B8A),
+        foregroundColor: Colors.white,
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          _buildSectionHeader('Localization'),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Currency',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(
+                      labelText: 'Currency',
+                      prefixIcon: Icon(Icons.payments_outlined, size: 20),
+                    ),
                     initialValue: settings.currencyCode,
-                    items: _currencyOptions
-                        .map(
-                          (option) => DropdownMenuItem<String>(
-                            value: option['code'] as String,
-                            child: Text(option['label'] as String),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (value) {
-                      if (value == null) return;
-                      final selected = _currencyOptions.firstWhere(
-                        (option) => option['code'] == value,
-                      );
+                    items: _currencyOptions.map((opt) => DropdownMenuItem(
+                      value: opt['code'] as String,
+                      child: Text(opt['label'] as String),
+                    )).toList(),
+                    onChanged: (val) {
+                      if (val == null) return;
+                      final selected = _currencyOptions.firstWhere((o) => o['code'] == val);
                       context.read<AppSettingsProvider>().setCurrency(
-                            code: selected['code'] as String,
-                            symbol: selected['symbol'] as String,
-                          );
+                        code: selected['code'] as String,
+                        symbol: selected['symbol'] as String,
+                      );
                     },
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Selected: ${selectedCurrency['label']}',
-                    style: TextStyle(color: Colors.grey.shade600),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Date Format',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(
+                      labelText: 'Date Format',
+                      prefixIcon: Icon(Icons.calendar_today_outlined, size: 20),
+                    ),
                     initialValue: settings.dateFormatPattern,
-                    items: _dateFormats
-                        .map(
-                          (option) => DropdownMenuItem<String>(
-                            value: option['pattern'] as String,
-                            child: Text(option['label'] as String),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (value) {
-                      if (value == null) return;
-                      context.read<AppSettingsProvider>().setDateFormat(value);
+                    items: _dateFormats.map((opt) => DropdownMenuItem(
+                      value: opt['pattern'] as String,
+                      child: Text(opt['label'] as String),
+                    )).toList(),
+                    onChanged: (val) {
+                      if (val == null) return;
+                      context.read<AppSettingsProvider>().setDateFormat(val);
                     },
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Selected: ${selectedDateFormat['label']}',
-                    style: TextStyle(color: Colors.grey.shade600),
                   ),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
+
+          _buildSectionHeader('Security'),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Form(
                 key: _formKey,
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'App Lock',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: const Text('Enable app lock'),
+                      title: const Text('Enable App Lock', style: TextStyle(fontWeight: FontWeight.w700)),
+                      subtitle: const Text('Require password to open app'),
                       value: _enableLock,
                       onChanged: (value) async {
-                        setState(() {
-                          _enableLock = value;
-                        });
-
+                        setState(() => _enableLock = value);
                         if (!value && settings.hasPassword) {
                           await context.read<AppSettingsProvider>().clearPassword();
-                          if (!context.mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('App lock disabled')),
-                          );
                         }
                       },
                     ),
                     if (_enableLock) ...[
+                      const SizedBox(height: 12),
                       TextFormField(
                         controller: _passwordController,
                         obscureText: true,
                         decoration: const InputDecoration(
-                          labelText: 'Password',
-                          prefixIcon: Icon(Icons.lock_outline),
+                          labelText: 'New Password',
+                          prefixIcon: Icon(Icons.lock_outline, size: 20),
                         ),
-                        validator: (value) {
-                          if (_enableLock && (value == null || value.isEmpty)) {
-                            return 'Enter a password';
-                          }
-                          return null;
-                        },
+                        validator: (v) => _enableLock && (v == null || v.isEmpty) ? 'Required' : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
                         controller: _confirmPasswordController,
                         obscureText: true,
                         decoration: const InputDecoration(
-                          labelText: 'Confirm password',
-                          prefixIcon: Icon(Icons.lock_reset_outlined),
+                          labelText: 'Confirm Password',
+                          prefixIcon: Icon(Icons.lock_reset_outlined, size: 20),
                         ),
-                        validator: (value) {
-                          if (_enableLock && value != _passwordController.text) {
-                            return 'Passwords do not match';
-                          }
-                          return null;
-                        },
+                        validator: (v) => _enableLock && v != _passwordController.text ? 'No match' : null,
                       ),
                       const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: _savePasswordSettings,
-                              icon: const Icon(Icons.save_outlined),
-                              label: Text(
-                                settings.hasPassword ? 'Update Password' : 'Save Password',
-                              ),
-                            ),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _savePasswordSettings,
+                          child: Text(settings.hasPassword ? 'Update Password' : 'Save Password'),
+                        ),
+                      ),
+                      if (settings.hasPassword) ...[
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton(
+                            onPressed: () => context.read<AppSettingsProvider>().lockApp(),
+                            child: const Text('Lock App Now'),
                           ),
-                          if (settings.hasPassword) ...[
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                onPressed: () {
-                                  context.read<AppSettingsProvider>().lockApp();
-                                },
-                                icon: const Icon(Icons.lock),
-                                label: const Text('Lock App Now'),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ] else if (settings.hasPassword) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        'Password is set but app lock is disabled.',
-                        style: TextStyle(color: Colors.grey.shade600),
-                      ),
-                      const SizedBox(height: 12),
-                      OutlinedButton.icon(
-                        onPressed: () async {
-                          final messenger = ScaffoldMessenger.of(context);
-                          await context.read<AppSettingsProvider>().clearPassword();
-                          if (!mounted) return;
-                          setState(() {
-                            _enableLock = false;
-                          });
-                          messenger.showSnackBar(
-                            const SnackBar(content: Text('Password removed')),
-                          );
-                        },
-                        icon: const Icon(Icons.delete_outline),
-                        label: const Text('Remove Password'),
-                      ),
+                        ),
+                      ],
                     ],
                   ],
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 16),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.language_outlined),
-              title: const Text('Language'),
-              subtitle: const Text('Coming soon'),
-              trailing: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.orange.shade50,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(
-                  'Soon',
-                  style: TextStyle(
-                    color: Colors.orange.shade700,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              enabled: false,
-            ),
-          ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
+
+          _buildSectionHeader('Backup & Restore'),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Cloud Backup & Restore',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  _cloudProviderRow(
+                    'Google Drive',
+                    Icons.cloud_outlined,
+                    Colors.blue,
+                    () => _backupDatabase('Google Drive'),
+                    () => _restoreDatabase('Google Drive'),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Choose a folder or file location inside your Google Drive or OneDrive sync folder on this device.',
-                    style: TextStyle(color: Colors.grey.shade600),
-                  ),
-                  const SizedBox(height: 16),
-                  _cloudProviderTile(
-                    icon: Icons.cloud,
-                    title: 'Google Drive',
-                    color: Colors.blue.shade700,
-                    onBackup: () => _backupDatabase('Google Drive'),
-                    onRestore: () => _restoreDatabase('Google Drive'),
-                  ),
-                  const SizedBox(height: 12),
-                  _cloudProviderTile(
-                    icon: Icons.cloud_done,
-                    title: 'OneDrive',
-                    color: Colors.indigo.shade700,
-                    onBackup: () => _backupDatabase('OneDrive'),
-                    onRestore: () => _restoreDatabase('OneDrive'),
+                  const Divider(height: 32),
+                  _cloudProviderRow(
+                    'OneDrive',
+                    Icons.cloud_done_outlined,
+                    Colors.indigo,
+                    () => _backupDatabase('OneDrive'),
+                    () => _restoreDatabase('OneDrive'),
                   ),
                 ],
               ),
             ),
           ),
+          const SizedBox(height: 40),
         ],
       ),
     );
   }
 
-  Widget _cloudProviderTile({
-    required IconData icon,
-    required String title,
-    required Color color,
-    required VoidCallback onBackup,
-    required VoidCallback onRestore,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withValues(alpha: 0.15)),
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 8),
+      child: Text(
+        title.toUpperCase(),
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w900,
+          color: Colors.blueGrey.shade500,
+          letterSpacing: 1.0,
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              CircleAvatar(
-                backgroundColor: color.withValues(alpha: 0.12),
-                child: Icon(icon, color: color),
+    );
+  }
+
+  Widget _cloudProviderRow(String title, IconData icon, Color color, VoidCallback onBackup, VoidCallback onRestore) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, color: color, size: 24),
+            const SizedBox(width: 12),
+            Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: onBackup,
+                icon: const Icon(Icons.upload_file, size: 18),
+                label: const Text('Backup'),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: onRestore,
+                icon: const Icon(Icons.download_for_offline_outlined, size: 18),
+                label: const Text('Restore'),
               ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: onBackup,
-                  icon: const Icon(Icons.backup_outlined),
-                  label: const Text('Backup Data'),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: onRestore,
-                  icon: const Icon(Icons.restore_outlined),
-                  label: const Text('Restore Data'),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

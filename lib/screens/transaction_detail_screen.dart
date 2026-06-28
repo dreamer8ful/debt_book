@@ -60,347 +60,199 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
     final isBorrow = widget.debt.type == 'borrow';
     final mainColor = isBorrow ? Colors.green.shade600 : Colors.red.shade600;
     final remaining = widget.debt.amount - widget.debt.paidAmount;
-    final settings = context.watch<AppSettingsProvider>();
-    final dueDateText = widget.debt.dueDate ?? 'undefined';
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         title: const Text('Transaction Details'),
         backgroundColor: mainColor,
         foregroundColor: Colors.white,
-        flexibleSpace: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [mainColor, mainColor.withValues(alpha: 0.86)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
+        elevation: 0,
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(14),
-        children: [
-          _animatedEntry(
-            delayMs: 0,
-            child: Card(
-              child: Padding(
-              padding: const EdgeInsets.all(14),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            // Profile Header Card
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 26,
-                        backgroundColor: mainColor.withValues(alpha: 0.12),
-                        child: Icon(Icons.person, color: mainColor),
+                  CircleAvatar(
+                    radius: 35,
+                    backgroundColor: mainColor.withValues(alpha: 0.1),
+                    child: Text(
+                      widget.debt.name.substring(0, 1).toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                        color: mainColor,
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              widget.debt.name,
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              isBorrow ? 'Creditor' : 'Debtor',
-                              style: TextStyle(
-                                color: Colors.grey.shade600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                   const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
+                  Text(
+                    widget.debt.name,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  Text(
+                    isBorrow ? 'CREDITOR' : 'DEBTOR',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                      color: mainColor,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 20),
+                    child: Divider(),
+                  ),
+                  Row(
                     children: [
-                      _statusChip(
-                        icon: Icons.calendar_today,
-                        label:
-                          'Since ${settings.formatStoredDate(widget.debt.dateBorrowed)} --> ${widget.debt.dueDate == null ? 'undefined' : settings.formatStoredDate(widget.debt.dueDate!)}',
-                        background: Colors.grey.shade100,
-                        foreground: Colors.grey.shade800,
-                      ),
-                      _statusChip(
-                        icon: Icons.payments_outlined,
-                        label: _formatCurrency(widget.debt.amount),
-                        background: Colors.blue.shade50,
-                        foreground: Colors.blue.shade800,
-                      ),
-                      _statusChip(
-                        icon: Icons.check_circle_outline,
-                        label: _formatCurrency(widget.debt.paidAmount),
-                        background: Colors.green.shade50,
-                        foreground: Colors.green.shade800,
-                      ),
-                      _statusChip(
-                        icon: Icons.timelapse,
-                        label: _formatCurrency(remaining),
-                        background: Colors.orange.shade50,
-                        foreground: Colors.orange.shade800,
-                      ),
+                      _buildHeaderStat('Total', _formatCurrency(widget.debt.amount), Colors.blueGrey.shade600),
+                      Container(width: 1, height: 30, color: const Color(0xFFE2E8F0)),
+                      _buildHeaderStat('Paid', _formatCurrency(widget.debt.paidAmount), Colors.green.shade600),
+                      Container(width: 1, height: 30, color: const Color(0xFFE2E8F0)),
+                      _buildHeaderStat('Remaining', _formatCurrency(remaining), Colors.red.shade600),
                     ],
                   ),
                 ],
-                ),
               ),
             ),
-          ),
-          const SizedBox(height: 12),
-          _animatedEntry(
-            delayMs: 45,
-            child: Card(
-              child: Padding(
-              padding: const EdgeInsets.all(14),
+            const SizedBox(height: 16),
+            
+            // Details List
+            _buildSectionHeader('Information'),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'All Parameters',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.2,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  _detailRow('Type', isBorrow ? 'Borrow' : 'Lend'),
-                  _detailRow(
-                    'Phone',
-                    widget.debt.phone?.isNotEmpty == true
-                        ? widget.debt.phone!
-                        : 'undefined',
-                  ),
-                  _detailRow('Date Borrowed', _formatDate(widget.debt.dateBorrowed)),
-                  _detailRow('Due Date', dueDateText == 'undefined' ? dueDateText : _formatDate(dueDateText)),
-                  _detailRow('Total Amount', _formatCurrency(widget.debt.amount)),
-                  _detailRow('Paid Amount', _formatCurrency(widget.debt.paidAmount)),
-                  _detailRow('Remaining Amount', _formatCurrency(remaining)),
-                  _detailRow(
-                    'Description',
-                    widget.debt.description?.isNotEmpty == true
-                        ? widget.debt.description!
-                        : 'undefined',
-                  ),
+                  _buildDetailTile(Icons.phone_outlined, 'Phone', widget.debt.phone ?? 'N/A'),
+                  _buildDetailTile(Icons.calendar_today_outlined, 'Started', _formatDate(widget.debt.dateBorrowed)),
+                  _buildDetailTile(Icons.event_note_outlined, 'Due Date', widget.debt.dueDate != null ? _formatDate(widget.debt.dueDate!) : 'N/A', isLast: true),
                 ],
-                ),
               ),
             ),
-          ),
-          const SizedBox(height: 12),
-          if (widget.debt.photoPath != null && File(widget.debt.photoPath!).existsSync())
-            _animatedEntry(
-              delayMs: 80,
-              child: Card(
-                child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Receipt / Invoice',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.file(
-                        File(widget.debt.photoPath!),
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  ],
-                  ),
+            const SizedBox(height: 16),
+
+            if (widget.debt.description?.isNotEmpty == true) ...[
+              _buildSectionHeader('Notes'),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: Text(
+                  widget.debt.description!,
+                  style: TextStyle(color: Colors.blueGrey.shade700, height: 1.5),
                 ),
               ),
-            ),
-          if (widget.debt.photoPath != null && File(widget.debt.photoPath!).existsSync())
-            const SizedBox(height: 12),
-          _animatedEntry(
-            delayMs: 120,
-            child: Card(
-              child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Transaction History',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.2,
-                    ),
+              const SizedBox(height: 16),
+            ],
+
+            if (widget.debt.photoPath != null && File(widget.debt.photoPath!).existsSync()) ...[
+              _buildSectionHeader('Attachment'),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.file(
+                  File(widget.debt.photoPath!),
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+
+            _buildSectionHeader('Activity History'),
+            FutureBuilder<List<DebtHistoryEntry>>(
+              future: _historyFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator()));
+                }
+                final history = snapshot.data ?? [];
+                if (history.isEmpty) {
+                  return _buildEmptyState('No activity yet');
+                }
+                return Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
                   ),
-                  const SizedBox(height: 10),
-                  FutureBuilder<List<DebtHistoryEntry>>(
-                    future: _historyFuture,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 24),
-                          child: Center(child: CircularProgressIndicator()),
-                        );
-                      }
-
-                      if (snapshot.hasError) {
-                        return Text(
-                          'Unable to load history',
-                          style: TextStyle(color: Colors.red.shade700),
-                        );
-                      }
-
-                      final history = snapshot.data ?? const <DebtHistoryEntry>[];
-                      if (history.isEmpty) {
-                        return Text(
-                          'No activity recorded yet',
-                          style: TextStyle(color: Colors.grey.shade600),
-                        );
-                      }
-
-                      return Column(
-                        children: history.map((entry) {
-                          final color = _historyColor(entry);
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 8),
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: color.withValues(alpha: 0.08),
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: color.withValues(alpha: 0.2)),
-                            ),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Icon(Icons.arrow_right_alt, color: color, size: 20),
-                                const SizedBox(width: 6),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        _historyLabel(entry),
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 13,
-                                          color: color,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        DateFormat('dd MMM yyyy, hh:mm a').format(
-                                          DateTime.tryParse(entry.createdAt) ??
-                                              DateTime.now(),
-                                        ),
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: Colors.grey.shade700,
-                                        ),
-                                      ),
-                                      if (entry.note != null && entry.note!.isNotEmpty) ...[
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          entry.note!,
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            color: Colors.grey.shade700,
-                                          ),
-                                        ),
-                                      ],
-                                      if (entry.balanceAfter != null) ...[
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          'Balance after: ${_formatCurrency(entry.balanceAfter!)}',
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            color: Colors.grey.shade700,
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }).toList(),
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: history.length,
+                    separatorBuilder: (_, _) => const Divider(indent: 50, height: 1),
+                    itemBuilder: (context, index) {
+                      final entry = history[index];
+                      final color = _historyColor(entry);
+                      return ListTile(
+                        dense: true,
+                        leading: CircleAvatar(
+                          radius: 14,
+                          backgroundColor: color.withValues(alpha: 0.1),
+                          child: Icon(
+                            entry.action == 'Payment' ? Icons.check : Icons.edit,
+                            size: 14,
+                            color: color,
+                          ),
+                        ),
+                        title: Text(
+                          _historyLabel(entry),
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        subtitle: Text(
+                          DateFormat('MMM dd, yyyy • hh:mm a').format(
+                            DateTime.tryParse(entry.createdAt) ?? DateTime.now(),
+                          ),
+                          style: TextStyle(fontSize: 11, color: Colors.blueGrey.shade500),
+                        ),
                       );
                     },
                   ),
-                ],
-                ),
-              ),
+                );
+              },
             ),
-          ),
-        ],
+            const SizedBox(height: 40),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _statusChip({
-    required IconData icon,
-    required String label,
-    required Color background,
-    required Color foreground,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+  Widget _buildHeaderStat(String label, String value, Color valueColor) {
+    return Expanded(
+      child: Column(
         children: [
-          Icon(icon, size: 14, color: foreground),
-          const SizedBox(width: 5),
           Text(
             label,
-            style: TextStyle(
-              color: foreground,
-              fontWeight: FontWeight.w600,
-              fontSize: 12,
-            ),
+            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.blueGrey.shade500),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _detailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            flex: 4,
-            child: Text(
-              label,
-              style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
-            ),
-          ),
-          Expanded(
-            flex: 6,
+          const SizedBox(height: 4),
+          FittedBox(
+            fit: BoxFit.scaleDown,
             child: Text(
               value,
-              textAlign: TextAlign.end,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: valueColor),
             ),
           ),
         ],
@@ -408,25 +260,49 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
     );
   }
 
-  Widget _animatedEntry({
-    required Widget child,
-    required int delayMs,
-  }) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0, end: 1),
-      duration: Duration(milliseconds: 220 + delayMs),
-      curve: Curves.easeOutCubic,
-      builder: (context, value, animatedChild) {
-        final offsetY = (1 - value) * 10;
-        return Opacity(
-          opacity: value,
-          child: Transform.translate(
-            offset: Offset(0, offsetY),
-            child: animatedChild,
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 8),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          title.toUpperCase(),
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w900,
+            color: Colors.blueGrey.shade500,
+            letterSpacing: 1.0,
           ),
-        );
-      },
-      child: child,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailTile(IconData icon, String label, String value, {bool isLast = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: Colors.blueGrey.shade400),
+          const SizedBox(width: 12),
+          Text(label, style: TextStyle(color: Colors.blueGrey.shade600, fontWeight: FontWeight.w500)),
+          const Spacer(),
+          Text(value, style: TextStyle(fontWeight: FontWeight.w700, color: Colors.blueGrey.shade900)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(String message) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Text(message, textAlign: TextAlign.center, style: TextStyle(color: Colors.blueGrey.shade400)),
     );
   }
 }

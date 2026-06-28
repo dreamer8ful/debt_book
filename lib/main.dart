@@ -36,8 +36,8 @@ class DebtBookApp extends StatelessWidget {
         letterSpacing: -0.2,
       ),
       titleMedium: GoogleFonts.manrope(fontWeight: FontWeight.w700),
-      bodyLarge: GoogleFonts.manrope(fontWeight: FontWeight.w500, height: 1.35),
-      bodyMedium: GoogleFonts.manrope(fontWeight: FontWeight.w500, height: 1.35),
+      bodyLarge: GoogleFonts.manrope(fontWeight: FontWeight.w500, height: 1.3),
+      bodyMedium: GoogleFonts.manrope(fontWeight: FontWeight.w500, height: 1.3),
       labelLarge: GoogleFonts.manrope(fontWeight: FontWeight.w700),
     );
 
@@ -45,7 +45,7 @@ class DebtBookApp extends StatelessWidget {
       useMaterial3: true,
       colorScheme: colorScheme,
       textTheme: textTheme,
-      scaffoldBackgroundColor: const Color(0xFFF2F5F8),
+      scaffoldBackgroundColor: const Color(0xFFF8FAFC),
       splashFactory: InkSparkle.splashFactory,
       appBarTheme: AppBarTheme(
         centerTitle: false,
@@ -59,78 +59,91 @@ class DebtBookApp extends StatelessWidget {
         ),
       ),
       cardTheme: CardThemeData(
-        elevation: 3,
-        shadowColor: const Color(0x22000000),
+        elevation: 1,
+        shadowColor: const Color(0x1A000000),
         color: Colors.white,
         surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: Color(0xFFE2E8F0), width: 1),
+        ),
         margin: EdgeInsets.zero,
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: Colors.white,
+        isDense: true,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
+          horizontal: 14,
+          vertical: 12,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: const Color(0xFFD8E0E7)),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: const Color(0xFFD8E0E7)),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: colorScheme.primary, width: 1.5),
         ),
+        labelStyle: const TextStyle(fontSize: 14),
+        hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          elevation: 0.5,
-          shadowColor: const Color(0x1A000000),
+          elevation: 0,
+          shadowColor: Colors.transparent,
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(12),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          textStyle: const TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: colorScheme.primary,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(12),
           ),
-          side: const BorderSide(color: Color(0xFFD6DEE6)),
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+          side: const BorderSide(color: Color(0xFFE2E8F0)),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          textStyle: const TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
       chipTheme: ChipThemeData(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        side: const BorderSide(color: Color(0xFFD6DEE6)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        side: const BorderSide(color: Color(0xFFE2E8F0)),
         backgroundColor: Colors.white,
         selectedColor: colorScheme.primaryContainer,
-        labelStyle: const TextStyle(fontWeight: FontWeight.w600),
+        labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
-        elevation: 1,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        elevation: 0,
-        backgroundColor: const Color(0xFF1F2A37),
+        elevation: 4,
+        backgroundColor: const Color(0xFF1E293B),
         contentTextStyle: textTheme.bodyMedium?.copyWith(
           color: Colors.white,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w600,
         ),
         actionTextColor: const Color(0xFFFFD166),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         insetPadding: const EdgeInsets.fromLTRB(14, 8, 14, 14),
       ),
-      dividerTheme: const DividerThemeData(color: Color(0xFFD9E1E8), thickness: 1),
+      dividerTheme: const DividerThemeData(
+        color: Color(0xFFE2E8F0),
+        thickness: 1,
+        space: 1,
+      ),
     );
   }
 

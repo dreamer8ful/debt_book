@@ -36,7 +36,7 @@ class DebtModel {
   
   String get displayType => isLend ? 'Lent to' : 'Borrowed from';
   
-  String get statusText => isFullyPaid ? 'Fully Paid' : 'Pending';
+  String get statusText => isFullyPaid ? 'Settled' : 'Active';
   
   Color get statusColor => isFullyPaid ? Colors.green : Colors.orange;
   

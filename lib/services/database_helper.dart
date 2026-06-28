@@ -141,6 +141,7 @@ class DatabaseHelper {
     int id,
     double payAmount, {
     String? note,
+    DateTime? date,
   }) async {
     // final db = await database;
     // return await db.rawUpdate(
@@ -170,6 +171,7 @@ class DatabaseHelper {
       amount: payAmount,
       balanceAfter: debt.amount - newPaidAmount,
       note: note,
+      date: date,
     );
     return result;
   }
@@ -237,6 +239,7 @@ class DatabaseHelper {
     double? amount,
     double? balanceAfter,
     String? note,
+    DateTime? date,
   }) async {
     await db.insert('debt_history', {
       'debtId': debtId,
@@ -244,7 +247,7 @@ class DatabaseHelper {
       'amount': amount,
       'balanceAfter': balanceAfter,
       'note': note,
-      'createdAt': DateTime.now().toIso8601String(),
+      'createdAt': (date ?? DateTime.now()).toIso8601String(),
     });
   }
 

@@ -32,169 +32,154 @@ class OverviewCard extends StatelessWidget {
 
     final isFiltering =
         provider.searchQuery.isNotEmpty || provider.filterStatus != 'All';
-    final cardColor = isLend ? const Color(0xFFFFF2F3) : const Color(0xFFEFFAF3);
     final textColor = isLend ? Colors.red.shade700 : Colors.green.shade700;
 
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 10, 16, 6),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [cardColor, Colors.white],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(18),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x12000000),
-            blurRadius: 12,
-            offset: Offset(0, 6),
+            color: Color(0x0A000000),
+            blurRadius: 8,
+            offset: Offset(0, 4),
           ),
         ],
         border: Border.all(
           color: isFiltering
               ? textColor.withValues(alpha: 0.5)
-              : const Color(0xFFDCE4EB),
-          width: isFiltering ? 2 : 1,
+              : const Color(0xFFE2E8F0),
+          width: isFiltering ? 1.5 : 1,
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(12),
-              onTap: onTap,
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 2),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: onTap,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Overview',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.blueGrey.shade900,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Overview',
+                    if (isFiltering)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        margin: const EdgeInsets.only(right: 8),
+                        decoration: BoxDecoration(
+                          color: textColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          'Filtered',
                           style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.grey[900],
-                            fontWeight: FontWeight.w800,
+                            fontSize: 11,
+                            color: textColor,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Touch to view full report',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (isFiltering)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: textColor.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.filter_list,
-                                  size: 14,
-                                  color: textColor,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'Filtered',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: textColor,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        if (onTap != null) ...[
-                          const SizedBox(width: 8),
-                          Icon(Icons.chevron_right, color: Colors.grey[500]),
-                        ],
-                      ],
-                    ),
+                      ),
+                    Icon(Icons.chevron_right, size: 20, color: Colors.blueGrey.shade400),
                   ],
                 ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: _buildAmountBlock(
+                  context,
+                  label: isLend ? 'Total Lend' : 'Total Borrow',
+                  amount: totalAmount,
+                  color: Colors.red.shade600,
+                ),
               ),
-            ),
+              Container(
+                width: 1,
+                height: 30,
+                color: const Color(0xFFE2E8F0),
+                margin: const EdgeInsets.symmetric(horizontal: 12),
+              ),
+              Expanded(
+                child: _buildAmountBlock(
+                  context,
+                  label: isLend ? 'Collected' : 'Paid',
+                  amount: paidAmount,
+                  color: Colors.green.shade600,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 6),
-          Divider(color: Colors.grey[300], height: 1),
-          const SizedBox(height: 12),
-          _buildAmountRow(
-            context,
-            label: isLend ? 'Total lend amount' : 'Total borrow amount',
-            amount: totalAmount,
-            color: Colors.red,
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 10),
+            child: Divider(height: 1),
           ),
-          const SizedBox(height: 10),
-          _buildAmountRow(
-            context,
-            label: isLend ? 'Collected' : 'Paid',
-            amount: paidAmount,
-            color: Colors.green,
-          ),
-          const SizedBox(height: 6),
-          Align(
-            alignment: Alignment.centerRight,
-            child: FractionallySizedBox(
-              widthFactor: 0.5,
-              child: Divider(color: Colors.grey[400], thickness: 1, height: 1),
-            ),
-          ),
-          const SizedBox(height: 10),
-          _buildAmountRow(
-            context,
-            label: 'Remaining',
-            amount: remainingAmount,
-            color: Colors.amber.shade800,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Remaining Balance',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.blueGrey.shade600,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                formatCurrency(context, remainingAmount),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.amber.shade800,
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildAmountRow(
+  Widget _buildAmountBlock(
     BuildContext context, {
     required String label,
     required double amount,
     required Color color,
   }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
           style: TextStyle(
-            fontSize: 13,
-            color: Colors.grey[700],
-            fontWeight: FontWeight.w500,
+            fontSize: 11,
+            color: Colors.blueGrey.shade500,
+            fontWeight: FontWeight.w600,
           ),
         ),
+        const SizedBox(height: 2),
         Text(
           formatCurrency(context, amount),
           style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.bold,
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
             color: color,
           ),
         ),

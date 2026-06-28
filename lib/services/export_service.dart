@@ -47,7 +47,7 @@ class ExportService {
     // Data rows
     for (var debt in debts) {
       final remaining = debt.amount - debt.paidAmount;
-      final status = debt.paidAmount >= debt.amount ? 'Paid Off' : 'Active';
+      final status = debt.paidAmount >= debt.amount ? 'Settled' : 'Active';
       
       sheet.appendRow([
         TextCellValue(debt.name),
@@ -128,7 +128,7 @@ class ExportService {
                 formatCurrency(debt.amount),
                 formatCurrency(debt.paidAmount),
                 formatCurrency(remaining),
-                debt.paidAmount >= debt.amount ? 'Paid Off' : 'Active',
+                debt.paidAmount >= debt.amount ? 'Settled' : 'Active',
               ];
             }).toList(),
             headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),

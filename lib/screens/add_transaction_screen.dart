@@ -36,6 +36,25 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   bool hasInterest = false;
   String? _photoPath;
 
+  double? _parseAmount(String value) {
+    return double.tryParse(value.trim());
+  }
+
+  double? _parseInterestPercent() {
+    if (!hasInterest) return 0;
+    return double.tryParse(interestController.text.trim());
+  }
+
+  double? _calculateTotalAmount() {
+    final principalAmount = _parseAmount(amountController.text);
+    if (principalAmount == null) return null;
+
+    final interestPercent = _parseInterestPercent();
+    if (interestPercent == null) return null;
+
+    return principalAmount + ((principalAmount * interestPercent) / 100);
+  }
+
   @override
   void dispose() {
     nameController.dispose();
@@ -170,11 +189,16 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
   void _saveTransaction() {
     if (_formKey.currentState!.validate()) {
+      final totalAmount = _calculateTotalAmount();
+      if (totalAmount == null) {
+        return;
+      }
+
       final debt = DebtModel(
         name: nameController.text.trim(),
         phone: phoneController.text.trim(),
         type: widget.type,
-        amount: double.parse(amountController.text),
+        amount: totalAmount,
         dateBorrowed: DateFormat('dd-MM-yyyy').format(selectedDate),
         dueDate: hasDueDate && dueDate != null
             ? DateFormat('dd-MM-yyyy').format(dueDate!)
@@ -223,242 +247,201 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(14, 12, 14, 88),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _animatedEntry(
-                delayMs: 0,
-                child: _sectionHeader(
-                  icon: Icons.person_outline,
-                  title: 'Person',
-                  subtitle: 'Who is involved in this transaction',
-                ),
+              _sectionHeader(
+                icon: Icons.person_outline,
+                title: 'Contact Information',
+                subtitle: 'Select or enter the person involved',
               ),
-              const SizedBox(height: 8),
-              _animatedEntry(
-                delayMs: 45,
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(14),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                      Text(
-                        'Select a contact or add one manually',
-                        style: TextStyle(
-                          color: Colors.grey.shade700,
-                          fontWeight: FontWeight.w600,
-                        ),
+              const SizedBox(height: 12),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: nameController,
+                              decoration: const InputDecoration(
+                                labelText: 'Name',
+                                prefixIcon: Icon(Icons.person_outline, size: 20),
+                              ),
+                              validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          IconButton.filledTonal(
+                            onPressed: _pickFromContacts,
+                            icon: const Icon(Icons.contacts_outlined, size: 20),
+                            tooltip: 'Contacts',
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 12),
-                      OutlinedButton.icon(
-                        onPressed: _pickFromContacts,
-                        icon: const Icon(Icons.contacts_outlined),
-                        label: const Text('Choose Contact'),
-                        style: _compactButtonStyle(),
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: nameController,
-                        textInputAction: TextInputAction.next,
-                        decoration: const InputDecoration(
-                          labelText: 'Person Name *',
-                          prefixIcon: Icon(Icons.person_outline),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Enter name';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 10),
                       TextFormField(
                         controller: phoneController,
-                        textInputAction: TextInputAction.next,
                         decoration: const InputDecoration(
-                          labelText: 'Phone Number *',
-                          prefixIcon: Icon(Icons.phone_outlined),
+                          labelText: 'Phone',
+                          prefixIcon: Icon(Icons.phone_outlined, size: 20),
                         ),
                         keyboardType: TextInputType.phone,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Enter phone';
-                          }
-                          return null;
-                        },
                       ),
-                      ],
-                    ),
+                    ],
                   ),
                 ),
               ),
-              const SizedBox(height: 14),
-              _animatedEntry(
-                delayMs: 85,
-                child: _sectionHeader(
-                  icon: Icons.request_quote_outlined,
-                  title: 'Transaction',
-                  subtitle: 'Amount, dates, and optional details',
-                ),
+              const SizedBox(height: 20),
+              _sectionHeader(
+                icon: Icons.receipt_long_outlined,
+                title: 'Transaction Details',
+                subtitle: 'Set amount and dates',
               ),
-              const SizedBox(height: 8),
-              _animatedEntry(
-                delayMs: 130,
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(14),
-                    child: Column(
-                      children: [
+              const SizedBox(height: 12),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    children: [
                       TextFormField(
                         controller: amountController,
-                        textInputAction: TextInputAction.next,
+                        onChanged: (_) => setState(() {}),
                         decoration: InputDecoration(
-                          labelText: 'Amount *',
-                          prefixText: settings.currencySymbol,
-                          prefixIcon: Icon(Icons.payments_outlined),
+                          labelText: 'Amount',
+                          prefixText: '${settings.currencySymbol} ',
+                          prefixIcon: const Icon(Icons.payments_outlined, size: 20),
                         ),
                         keyboardType: TextInputType.number,
                         validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Enter amount';
-                          }
-                          if (double.tryParse(value) == null) {
-                            return 'Invalid number';
-                          }
+                          if (value == null || value.isEmpty) return 'Required';
+                          if (double.tryParse(value) == null) return 'Invalid';
                           return null;
                         },
                       ),
-                      const SizedBox(height: 12),
-                      ListTile(
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
-                        leading: Icon(Icons.calendar_today, color: mainColor),
-                        title: const Text('Date Borrowed'),
-                        subtitle: Text(
-                          settings.formatDate(selectedDate),
-                        ),
-                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                        onTap: () => _selectDate(context, false),
-                      ),
-                      const Divider(height: 14),
+                      const Divider(),
                       SwitchListTile(
                         dense: true,
                         contentPadding: EdgeInsets.zero,
-                        title: const Text('Set Due Date'),
-                        value: hasDueDate,
+                        visualDensity: VisualDensity.compact,
+                        title: const Text('Add Interest'),
+                        value: hasInterest,
                         activeThumbColor: mainColor,
                         onChanged: (value) {
                           setState(() {
-                            hasDueDate = value;
-                            if (value && dueDate == null) {
-                              dueDate = DateTime.now().add(
-                                const Duration(days: 30),
-                              );
+                            hasInterest = value;
+                            if (!value) {
+                              interestController.clear();
                             }
                           });
                         },
                       ),
-                      if (hasDueDate) ...[
-                        ListTile(
-                          dense: true,
-                          contentPadding: EdgeInsets.zero,
-                          leading: Icon(
-                            Icons.event,
-                            color: Colors.orange.shade700,
-                          ),
-                          title: const Text('Due Date'),
-                          subtitle: Text(
-                            dueDate != null
-                                ? settings.formatDate(dueDate!)
-                                : 'Select date',
-                          ),
-                          trailing: const Icon(
-                            Icons.arrow_forward_ios,
-                            size: 16,
-                          ),
-                          onTap: () => _selectDate(context, true),
-                        ),
-                      ],
-                      const Divider(height: 14),
-                      SwitchListTile(
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text('Add Interest'),
-                        value: hasInterest,
-                        activeThumbColor: mainColor,
-                        onChanged: (value) =>
-                            setState(() => hasInterest = value),
-                      ),
-                      if (hasInterest)
+                      if (hasInterest) ...[
                         TextFormField(
                           controller: interestController,
-                          textInputAction: TextInputAction.next,
+                          onChanged: (_) => setState(() {}),
                           decoration: const InputDecoration(
                             labelText: 'Interest %',
                             suffixText: '%',
-                            prefixIcon: Icon(Icons.percent),
+                            prefixIcon: Icon(Icons.percent, size: 20),
                           ),
                           keyboardType: TextInputType.number,
+                          validator: (value) {
+                            if (!hasInterest) return null;
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Required';
+                            }
+                            final interestPercent = double.tryParse(value.trim());
+                            if (interestPercent == null) return 'Invalid';
+                            if (interestPercent < 0) return 'Must be 0 or more';
+                            return null;
+                          },
                         ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: descController,
-                        textInputAction: TextInputAction.done,
-                        onFieldSubmitted: (_) => _saveTransaction(),
-                        decoration: const InputDecoration(
-                          labelText: 'Description (Optional)',
-                          alignLabelWithHint: true,
-                          prefixIcon: Icon(Icons.notes_outlined),
-                        ),
-                        maxLines: 3,
-                      ),
-                      const SizedBox(height: 12),
-                      const Divider(height: 14),
-                      const SizedBox(height: 6),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Attachment (invoice/receipt)',
-                          style: TextStyle(
-                            color: Colors.grey.shade700,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: OutlinedButton.icon(
-                          onPressed: _showPhotoOptions,
-                          icon: const Icon(Icons.attach_file),
-                          label: const Text('Attach Receipt / Invoice'),
-                          style: _compactButtonStyle(),
-                        ),
-                      ),
-                      if (_photoPath != null && File(_photoPath!).existsSync()) ...[
-                        const SizedBox(height: 10),
-                        ConstrainedBox(
-                          constraints: const BoxConstraints(
-                            maxWidth: 240,
-                            maxHeight: 300,
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Image.file(
-                              File(_photoPath!),
-                              fit: BoxFit.contain,
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            _buildTotalPreview(settings.currencySymbol),
+                            style: TextStyle(
+                              color: Colors.blueGrey.shade600,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
                       ],
-                      ],
-                    ),
+                      const SizedBox(height: 8),
+                      ListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        visualDensity: VisualDensity.compact,
+                        leading: Icon(Icons.calendar_today, color: mainColor, size: 20),
+                        title: const Text('Transaction Date'),
+                        subtitle: Text(settings.formatDate(selectedDate)),
+                        onTap: () => _selectDate(context, false),
+                      ),
+                      const Divider(),
+                      SwitchListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        visualDensity: VisualDensity.compact,
+                        title: const Text('Set Due Date'),
+                        value: hasDueDate,
+                        onChanged: (value) => setState(() => hasDueDate = value),
+                      ),
+                      if (hasDueDate)
+                        ListTile(
+                          dense: true,
+                          contentPadding: EdgeInsets.zero,
+                          visualDensity: VisualDensity.compact,
+                          leading: const Icon(Icons.event, color: Colors.orange, size: 20),
+                          title: const Text('Due Date'),
+                          subtitle: Text(dueDate != null ? settings.formatDate(dueDate!) : 'Select Date'),
+                          onTap: () => _selectDate(context, true),
+                        ),
+                      const Divider(),
+                      TextFormField(
+                        controller: descController,
+                        decoration: const InputDecoration(
+                          labelText: 'Description (Optional)',
+                          prefixIcon: Icon(Icons.notes_outlined, size: 20),
+                        ),
+                        maxLines: 2,
+                      ),
+                    ],
                   ),
                 ),
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 20),
+              _sectionHeader(
+                icon: Icons.attach_file,
+                title: 'Attachments',
+                subtitle: 'Invoice or receipt photo',
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: _showPhotoOptions,
+                icon: const Icon(Icons.add_a_photo_outlined, size: 18),
+                label: Text(_photoPath == null ? 'Add Receipt' : 'Change Receipt'),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 44),
+                ),
+              ),
+              if (_photoPath != null) ...[
+                const SizedBox(height: 12),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.file(
+                    File(_photoPath!),
+                    height: 150,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -469,14 +452,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         icon: const Icon(Icons.check, color: Colors.white),
         label: const Text('Save Transaction', style: TextStyle(color: Colors.white)),
       ),
-    );
-  }
-
-  ButtonStyle _compactButtonStyle() {
-    return OutlinedButton.styleFrom(
-      visualDensity: VisualDensity.compact,
-      tapTargetSize: MaterialTapTargetSize.padded,
-      minimumSize: const Size(0, 40),
     );
   }
 
@@ -516,25 +491,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     );
   }
 
-  Widget _animatedEntry({
-    required Widget child,
-    required int delayMs,
-  }) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0, end: 1),
-      duration: Duration(milliseconds: 220 + delayMs),
-      curve: Curves.easeOutCubic,
-      builder: (context, value, animatedChild) {
-        final offsetY = (1 - value) * 10;
-        return Opacity(
-          opacity: value,
-          child: Transform.translate(
-            offset: Offset(0, offsetY),
-            child: animatedChild,
-          ),
-        );
-      },
-      child: child,
-    );
+  String _buildTotalPreview(String currencySymbol) {
+    final totalAmount = _calculateTotalAmount();
+    if (totalAmount == null) {
+      return 'Enter amount and interest to calculate total';
+    }
+    return 'Total with interest: $currencySymbol${totalAmount.toStringAsFixed(0)}';
   }
 }

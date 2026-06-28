@@ -37,6 +37,25 @@ class _UpdateTransactionScreenState extends State<UpdateTransactionScreen> {
   bool hasInterest = false;
   String? _photoPath;
 
+  double? _parseAmount(String value) {
+    return double.tryParse(value.trim());
+  }
+
+  double? _parseInterestPercent() {
+    if (!hasInterest) return 0;
+    return double.tryParse(interestController.text.trim());
+  }
+
+  double? _calculateTotalAmount() {
+    final principalAmount = _parseAmount(amountController.text);
+    if (principalAmount == null) return null;
+
+    final interestPercent = _parseInterestPercent();
+    if (interestPercent == null) return null;
+
+    return principalAmount + ((principalAmount * interestPercent) / 100);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -197,8 +216,12 @@ class _UpdateTransactionScreenState extends State<UpdateTransactionScreen> {
 
   void _updateTransaction() {
     if (_formKey.currentState!.validate()) {
-      final newAmount = double.parse(amountController.text);
-      if (newAmount < widget.debt.paidAmount) {
+      final totalAmount = _calculateTotalAmount();
+      if (totalAmount == null) {
+        return;
+      }
+
+      if (totalAmount < widget.debt.paidAmount) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -215,7 +238,7 @@ class _UpdateTransactionScreenState extends State<UpdateTransactionScreen> {
         name: nameController.text.trim(),
         phone: phoneController.text.trim(),
         type: widget.debt.type,
-        amount: newAmount,
+        amount: totalAmount,
         paidAmount: widget.debt.paidAmount,
         dateBorrowed: DateFormat('dd-MM-yyyy').format(selectedDate),
         dueDate: hasDueDate && dueDate != null
@@ -351,6 +374,7 @@ class _UpdateTransactionScreenState extends State<UpdateTransactionScreen> {
                       children: [
                       TextFormField(
                         controller: amountController,
+                        onChanged: (_) => setState(() {}),
                         textInputAction: TextInputAction.next,
                         decoration: InputDecoration(
                           labelText: 'Amount *',
@@ -426,12 +450,19 @@ class _UpdateTransactionScreenState extends State<UpdateTransactionScreen> {
                         title: const Text('Add Interest'),
                         value: hasInterest,
                         activeThumbColor: mainColor,
-                        onChanged: (value) =>
-                            setState(() => hasInterest = value),
+                        onChanged: (value) {
+                          setState(() {
+                            hasInterest = value;
+                            if (!value) {
+                              interestController.clear();
+                            }
+                          });
+                        },
                       ),
-                      if (hasInterest)
+                      if (hasInterest) ...[
                         TextFormField(
                           controller: interestController,
+                          onChanged: (_) => setState(() {}),
                           textInputAction: TextInputAction.next,
                           decoration: const InputDecoration(
                             labelText: 'Interest %',
@@ -439,7 +470,30 @@ class _UpdateTransactionScreenState extends State<UpdateTransactionScreen> {
                             prefixIcon: Icon(Icons.percent),
                           ),
                           keyboardType: TextInputType.number,
+                          validator: (value) {
+                            if (!hasInterest) return null;
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Required';
+                            }
+                            final interestPercent = double.tryParse(value.trim());
+                            if (interestPercent == null) return 'Invalid';
+                            if (interestPercent < 0) return 'Must be 0 or more';
+                            return null;
+                          },
                         ),
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            _buildTotalPreview(settings.currencySymbol),
+                            style: TextStyle(
+                              color: Colors.blueGrey.shade600,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 12),
                       TextFormField(
                         controller: descController,
@@ -574,5 +628,13 @@ class _UpdateTransactionScreenState extends State<UpdateTransactionScreen> {
       },
       child: child,
     );
+  }
+
+  String _buildTotalPreview(String currencySymbol) {
+    final totalAmount = _calculateTotalAmount();
+    if (totalAmount == null) {
+      return 'Enter amount and interest to calculate total';
+    }
+    return 'Total with interest: $currencySymbol${totalAmount.toStringAsFixed(0)}';
   }
 }

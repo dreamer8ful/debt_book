@@ -58,7 +58,7 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
   }
 
   Future<void> _showPayDialog() async {
-    final result = await showDialog<double>(
+    final result = await showDialog<Map<String, dynamic>>(
       context: context,
       barrierDismissible: false,
       builder: (context) => PaymentDialog(debt: widget.debt),
@@ -67,11 +67,20 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
     if (result == null || !mounted) return;
 
     try {
-      await context.read<DebtProvider>().addPayment(widget.debt.id!, result);
+      final amount = result['amount'] as double;
+      final date = result['date'] as DateTime;
+      final note = result['note'] as String?;
+
+      await context.read<DebtProvider>().addPayment(
+            widget.debt.id!,
+            amount,
+            date: date,
+            note: note,
+          );
 
       if (!mounted) return;
       _showFeedback(
-        '${widget.debt.type == 'lend' ? 'Collected' : 'Paid'} ${formatCurrency(result)}',
+        '${widget.debt.type == 'lend' ? 'Collected' : 'Paid'} ${formatCurrency(amount)}',
         backgroundColor: Colors.green.shade600,
       );
     } catch (e) {
@@ -259,351 +268,202 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
     final buttonText = widget.debt.type == 'lend' ? 'Collect' : 'Pay';
     final isPaid = remainingAmount <= 0;
     final settings = context.watch<AppSettingsProvider>();
-    final transactionPeriod =
-      'Since ${settings.formatStoredDate(widget.debt.dateBorrowed)} --> ${widget.debt.dueDate == null ? 'undefined' : settings.formatStoredDate(widget.debt.dueDate!)}';
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-      elevation: _isExpanded ? 5 : 2,
-      shadowColor: mainColor.withValues(alpha: 0.14),
-      clipBehavior: Clip.antiAlias,
-      surfaceTintColor: Colors.transparent,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      elevation: _isExpanded ? 2 : 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         side: BorderSide(
-          color: _isExpanded
-              ? mainColor.withValues(alpha: 0.35)
-              : Colors.transparent,
-          width: 1.25,
+          color: _isExpanded ? mainColor.withValues(alpha: 0.3) : const Color(0xFFE2E8F0),
+          width: 1,
         ),
       ),
-      child: AnimatedSize(
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOutCubic,
-        alignment: Alignment.topCenter,
-        child: Column(
-          children: [
-            InkWell(
-            onTap: () => setState(() => _isExpanded = !_isExpanded),
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Row(
-                children: [
-                  Container(
-                    width: 5,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: mainColor,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: mainColor.withValues(alpha: 0.12),
-                    child: Icon(Icons.person, color: mainColor),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${widget.debt.name} ${isBorrow ? '(Creditor)' : '(Debtor)'}',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey.shade900,
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Row(
-                          children: [
-                            Icon(
-                              isPaid ? Icons.check_circle : Icons.pending,
-                              size: 14,
-                              color: isPaid ? Colors.green : Colors.orange,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${isBorrow ? 'Borrow' : 'Lend'} ${formatCurrency(remainingAmount)}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                decoration: isPaid
-                                    ? TextDecoration.lineThrough
-                                    : null,
-                                color: isPaid ? Colors.grey : null,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Text(
-                          transactionPeriod,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (!_isExpanded && !isPaid)
-                    ElevatedButton(
-                      onPressed: _showPayDialog,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green.shade600,
-                        foregroundColor: Colors.white,
-                        visualDensity: VisualDensity.compact,
-                        tapTargetSize: MaterialTapTargetSize.padded,
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18),
-                        ),
+      child: InkWell(
+        onTap: () => setState(() => _isExpanded = !_isExpanded),
+        borderRadius: BorderRadius.circular(16),
+        child: AnimatedSize(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 22,
+                      backgroundColor: mainColor.withValues(alpha: 0.1),
+                      child: Text(
+                        widget.debt.name.substring(0, 1).toUpperCase(),
+                        style: TextStyle(color: mainColor, fontWeight: FontWeight.bold),
                       ),
-                      child: Text(buttonText),
                     ),
-                  if (!_isExpanded && isPaid)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.green.shade100,
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(
-                            Icons.check_circle,
-                            size: 16,
-                            color: Colors.green.shade700,
-                          ),
-                          const SizedBox(width: 4),
                           Text(
-                            'PAID',
-                            style: TextStyle(
-                              color: Colors.green.shade700,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 11,
+                            widget.debt.name,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 15,
+                              letterSpacing: -0.2,
                             ),
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: mainColor.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  isBorrow ? 'CREDITOR' : 'DEBTOR',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w900,
+                                    color: mainColor,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                isPaid ? 'Settled' : 'Pending: ${formatCurrency(remainingAmount)}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: isPaid ? Colors.green.shade600 : Colors.blueGrey.shade600,
+                                  fontWeight: isPaid ? FontWeight.w700 : FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
-                ],
-              ),
-            ),
-          ),
-            if (_isExpanded) ...[
-              const Divider(height: 1),
-              Padding(
-              padding: const EdgeInsets.all(14),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      OutlinedButton.icon(
-                        onPressed: () async {
-                          final confirmDelete = await _showDeleteConfirmation();
-                          if (confirmDelete == true) {
-                            widget.onDelete();
-                            if (mounted) {
-                              _showFeedback(
-                                '${widget.debt.name} deleted',
-                                backgroundColor: Colors.red,
-                              );
-                            }
-                          }
-                        },
-                        icon: const Icon(
-                          Icons.delete,
-                          size: 16,
-                          color: Colors.red,
-                        ),
-                        label: const Text(
-                          'Delete',
-                          style: TextStyle(color: Colors.red),
-                        ),
-                        style: OutlinedButton.styleFrom(
+                    if (!isPaid)
+                      ElevatedButton(
+                        onPressed: _showPayDialog,
+                        style: ElevatedButton.styleFrom(
                           visualDensity: VisualDensity.compact,
-                          tapTargetSize: MaterialTapTargetSize.padded,
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          side: const BorderSide(color: Colors.red),
+                          backgroundColor: mainColor,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          minimumSize: const Size(0, 36),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      CircleAvatar(
-                        radius: 20,
-                        backgroundColor: mainColor.withValues(alpha: 0.1),
-                        child: Icon(Icons.person, color: mainColor),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${widget.debt.name} ${isBorrow ? '(Creditor)' : '(Debtor)'}',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey.shade900,
-                                fontSize: 14,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              '${isBorrow ? 'Total Borrow' : 'Total Lend'} ${formatCurrency(widget.debt.amount)}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.grey.shade800,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.arrow_circle_down,
-                                  size: 16,
-                                  color: Colors.red.shade400,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'Remaining ${formatCurrency(remainingAmount)}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    decoration: isPaid
-                                        ? TextDecoration.lineThrough
-                                        : null,
-                                    color: isPaid ? Colors.grey : null,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.arrow_circle_up,
-                                  size: 16,
-                                  color: Colors.green.shade400,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'Paid ${formatCurrency(widget.debt.paidAmount)}',
-                                  style: TextStyle(
-                                    color: Colors.green.shade700,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      if (!isPaid)
-                        Column(
-                          children: [
-                            ElevatedButton(
-                              onPressed: _showAddMoreDialog,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green.shade600,
-                                foregroundColor: Colors.white,
-                                visualDensity: VisualDensity.compact,
-                                tapTargetSize: MaterialTapTargetSize.padded,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 10,
-                                ),
-                              ),
-                              child: Text(
-                                isBorrow ? 'Borrow more' : 'Lend more',
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            ElevatedButton(
-                              onPressed: _showPayDialog,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green.shade600,
-                                foregroundColor: Colors.white,
-                                visualDensity: VisualDensity.compact,
-                                tapTargetSize: MaterialTapTargetSize.padded,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 10,
-                                ),
-                              ),
-                              child: Text(buttonText),
-                            ),
-                          ],
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                      transactionPeriod,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: _openUpdatePage,
-                          style: OutlinedButton.styleFrom(
-                            visualDensity: VisualDensity.compact,
-                            tapTargetSize: MaterialTapTargetSize.padded,
-                            side: BorderSide(color: Colors.green.shade600),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          ),
-                          child: Text(
-                            'Update',
-                            style: TextStyle(color: Colors.green.shade700),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: _openDetailsPage,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue.shade700,
-                            foregroundColor: Colors.white,
-                            visualDensity: VisualDensity.compact,
-                            tapTargetSize: MaterialTapTargetSize.padded,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          ),
-                          icon: const Icon(Icons.info_outline, size: 18),
-                          label: const Text('Details'),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                        child: Text(buttonText),
+                      )
+                    else
+                      Icon(Icons.check_circle, color: Colors.green.shade600, size: 24),
+                  ],
+                ),
               ),
-              ),
+              if (_isExpanded) ...[
+                const Divider(indent: 12, endIndent: 12),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _buildDetailItem('Total', formatCurrency(widget.debt.amount)),
+                          _buildDetailItem('Paid', formatCurrency(widget.debt.paidAmount)),
+                          _buildDetailItem('Due', settings.formatStoredDate(widget.debt.dueDate ?? 'N/A')),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: _openUpdatePage,
+                              style: OutlinedButton.styleFrom(
+                                visualDensity: VisualDensity.compact,
+                                padding: const EdgeInsets.symmetric(vertical: 8),
+                                backgroundColor: const Color.fromARGB(255, 235, 136, 7).withValues(alpha: 0.08),
+                              ),
+                              child: const Text('Update'),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: _openDetailsPage,
+                              style: OutlinedButton.styleFrom(
+                                visualDensity: VisualDensity.compact,
+                                padding: const EdgeInsets.symmetric(vertical: 8),
+                                backgroundColor: const Color.fromARGB(255, 230, 94, 94).withValues(alpha: 0.08),
+                              ),
+                              child: const Text('Details'),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          IconButton.filledTonal(
+                            onPressed: () async {
+                              final confirmDelete = await _showDeleteConfirmation();
+                              if (confirmDelete == true) {
+                                widget.onDelete();
+                              }
+                            },
+                            icon: const Icon(Icons.delete_outline, size: 20),
+                            style: IconButton.styleFrom(
+                              foregroundColor: Colors.red,
+                              backgroundColor: Colors.red.withValues(alpha: 0.1),
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (!isPaid) ...[
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: _showAddMoreDialog,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: mainColor,
+                              foregroundColor: Colors.white,
+                            ),
+                            child: Text(isBorrow ? 'Borrow More' : 'Lend More'),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildDetailItem(String label, String value) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            color: Colors.blueGrey.shade500,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: Colors.blueGrey,
+          ),
+        ),
+      ],
     );
   }
 }

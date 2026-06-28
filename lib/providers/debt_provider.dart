@@ -8,7 +8,7 @@ class DebtProvider with ChangeNotifier {
   List<DebtModel> _borrowList = [];
   
   String _searchQuery = '';
-  String _filterStatus = 'All'; // All, Paid, Unpaid
+  String _filterStatus = 'Active'; // All, Settled, Active
   String _sortBy = 'Date';
   
   double _remainingLend = 0;
@@ -55,9 +55,9 @@ class DebtProvider with ChangeNotifier {
       
       // Filter by status
       bool matchesStatus = true;
-      if (_filterStatus == 'Paid') {
+      if (_filterStatus == 'Settled') {
         matchesStatus = remainingAmount <= 0;
-      } else if (_filterStatus == 'Unpaid') {
+      } else if (_filterStatus == 'Active') {
         matchesStatus = remainingAmount > 0;
       }
       
@@ -144,11 +144,12 @@ class DebtProvider with ChangeNotifier {
     await loadAllData();
   }
   
-  Future<void> addPayment(int id, double payAmount, {String? note}) async {
+  Future<void> addPayment(int id, double payAmount, {String? note, DateTime? date}) async {
     await DatabaseHelper.instance.updatePaidAmount(
       id,
       payAmount,
       note: note,
+      date: date,
     );
     await loadAllData();
   }

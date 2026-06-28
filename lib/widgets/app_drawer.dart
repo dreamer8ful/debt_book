@@ -1,137 +1,125 @@
 import 'package:flutter/material.dart';
-import '../screens/export_screen.dart';
-import '../screens/home_screen.dart';
-import '../screens/settings_screen.dart';
+
+const String _appDeveloperName = 'IntroSoft Media Solutions';
+const String _appContactInfo = 'msr08@live.com';
+const String _appCopyrightNotice = '© 2026 IntroSoft Media Solutions. All rights reserved.';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
 
-  PageRouteBuilder<void> _buildPageRoute(Widget page) {
-    return PageRouteBuilder<void>(
-      pageBuilder: (context, animation, secondaryAnimation) => page,
-      transitionDuration: const Duration(milliseconds: 220),
-      reverseTransitionDuration: const Duration(milliseconds: 180),
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        final slide = Tween<Offset>(
-          begin: const Offset(0.03, 0),
-          end: Offset.zero,
-        ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic));
-        final fade = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
-        return FadeTransition(
-          opacity: fade,
-          child: SlideTransition(position: slide, child: child),
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      backgroundColor: const Color(0xFFF4F8FB),
-      child: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 12),
+      backgroundColor: Colors.white,
+      child: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(24),
-              child: UserAccountsDrawerHeader(
-                margin: EdgeInsets.zero,
-                accountName: const Text(
-                  'Debt Manager',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                ),
-                accountEmail: const Text('Manage your debts easily'),
-                currentAccountPicture: CircleAvatar(
-                  backgroundColor: Colors.white,
-                  child: Icon(
-                    Icons.account_balance_wallet,
-                    size: 40,
-                    color: const Color(0xFF0D6B8A),
-                  ),
-                ),
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF0D6B8A), Color(0xFF0A536B)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
+          Container(
+            padding: const EdgeInsets.fromLTRB(20, 60, 20, 20),
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              color: Color(0xFF0D6B8A),
+              gradient: LinearGradient(
+                colors: [Color(0xFF0D6B8A), Color(0xFF0A536B)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const CircleAvatar(
+                  radius: 30,
+                  backgroundColor: Colors.white,
+                  child: Icon(Icons.account_balance_wallet, size: 30, color: Color(0xFF0D6B8A)),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Debt Book',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                Text(
+                  'Manage your debts easily',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(12),
               children: [
                 _buildDrawerTile(
                   context,
-                  icon: Icons.home,
+                  icon: Icons.home_outlined,
+                  activeIcon: Icons.home,
                   title: 'Home',
+                  isSelected: ModalRoute.of(context)?.settings.name == '/home' || ModalRoute.of(context)?.settings.name == '/',
                   onTap: () {
                     Navigator.pop(context);
                     if (ModalRoute.of(context)?.settings.name != '/home') {
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        _buildPageRoute(const HomeScreen()),
-                        (route) => false,
-                      );
+                      Navigator.pushReplacementNamed(context, '/home');
                     }
                   },
                 ),
-                const SizedBox(height: 8),
                 _buildDrawerTile(
                   context,
-                  icon: Icons.file_download,
-                  iconColor: Colors.green,
+                  icon: Icons.file_download_outlined,
+                  activeIcon: Icons.file_download,
                   title: 'Export Data',
-                  subtitle: 'Save to Excel or PDF',
-                  trailing: const Icon(Icons.chevron_right),
                   onTap: () {
                     Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      _buildPageRoute(const ExportScreen()),
-                    );
+                    Navigator.pushNamed(context, '/export');
                   },
                 ),
-                const SizedBox(height: 8),
                 _buildDrawerTile(
                   context,
-                  icon: Icons.settings,
+                  icon: Icons.settings_outlined,
+                  activeIcon: Icons.settings,
                   title: 'Settings',
+                  isSelected: ModalRoute.of(context)?.settings.name == '/settings',
                   onTap: () {
                     Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      _buildPageRoute(const SettingsScreen()),
-                    );
+                    Navigator.pushNamed(context, '/settings');
                   },
                 ),
-                const SizedBox(height: 8),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: Divider(),
+                ),
                 _buildDrawerTile(
                   context,
                   icon: Icons.info_outline,
+                  activeIcon: Icons.info,
                   title: 'About',
                   onTap: () {
                     Navigator.pop(context);
                     showAboutDialog(
                       context: context,
-                      applicationName: 'Debt Manager',
+                      applicationName: 'Debt Book',
                       applicationVersion: '1.0.0',
-                      applicationIcon: const Icon(
-                        Icons.account_balance_wallet,
-                        size: 40,
-                      ),
+                      applicationLegalese: _appCopyrightNotice,
                       children: const [
-                        Text('Track your lending and borrowing with ease.'),
-                        SizedBox(height: 8),
-                        Text('Features:'),
-                        Text('• Track money you lent and borrowed'),
-                        Text('• Export data to Excel/PDF'),
-                        Text('• Payment reminders'),
-                        Text('• Search and filter transactions'),
+                        SizedBox(height: 12),
+                        _AboutInfoRow(
+                          icon: Icons.person_outline,
+                          label: 'Developer',
+                          value: _appDeveloperName,
+                        ),
+                        SizedBox(height: 10),
+                        _AboutInfoRow(
+                          icon: Icons.mail_outline,
+                          label: 'Contact',
+                          value: _appContactInfo,
+                        ),
                       ],
                     );
                   },
@@ -147,26 +135,74 @@ class AppDrawer extends StatelessWidget {
   Widget _buildDrawerTile(
     BuildContext context, {
     required IconData icon,
+    required IconData activeIcon,
     required String title,
-    VoidCallback? onTap,
-    String? subtitle,
-    Widget? trailing,
-    Color? iconColor,
+    required VoidCallback onTap,
+    bool isSelected = false,
   }) {
-    return Card(
-      elevation: 1,
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-        leading: CircleAvatar(
-          radius: 18,
-          backgroundColor: (iconColor ?? const Color(0xFF0D6B8A)).withValues(alpha: 0.12),
-          child: Icon(icon, color: iconColor ?? const Color(0xFF0D6B8A)),
+    final color = isSelected ? const Color(0xFF0D6B8A) : Colors.blueGrey.shade700;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF0D6B8A).withValues(alpha: 0.1) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
         ),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
-        subtitle: subtitle == null ? null : Text(subtitle),
-        trailing: trailing,
-        onTap: onTap,
+        child: Row(
+          children: [
+            Icon(isSelected ? activeIcon : icon, color: color, size: 22),
+            const SizedBox(width: 16),
+            Text(
+              title,
+              style: TextStyle(
+                color: color,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                fontSize: 15,
+              ),
+            ),
+          ],
+        ),
       ),
+    );
+  }
+}
+
+class _AboutInfoRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _AboutInfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 18, color: const Color(0xFF0D6B8A)),
+        const SizedBox(width: 10),
+        Expanded(
+          child: RichText(
+            text: TextSpan(
+              style: DefaultTextStyle.of(context).style,
+              children: [
+                TextSpan(
+                  text: '$label: ',
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+                TextSpan(text: value),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
