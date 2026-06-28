@@ -50,6 +50,12 @@
 	</dict>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSContactsUsageDescription</key>
+	<string>This app needs access to your contacts so you can choose a person from the address book.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs access to your photos so you can attach an image to a transaction.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs camera access so you can capture a photo for a transaction.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

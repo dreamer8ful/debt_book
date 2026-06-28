@@ -16,7 +16,10 @@ class _SearchFilterBarState extends State<SearchFilterBar> {
   void initState() {
     super.initState();
     _searchController.addListener(() {
-      Provider.of<DebtProvider>(context, listen: false).setSearchQuery(_searchController.text);
+      Provider.of<DebtProvider>(
+        context,
+        listen: false,
+      ).setSearchQuery(_searchController.text);
     });
   }
 
@@ -31,43 +34,57 @@ class _SearchFilterBarState extends State<SearchFilterBar> {
     return Consumer<DebtProvider>(
       builder: (context, provider, child) {
         return Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            children: [
-              // Search field
-              TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: 'Search by name...',
-                  prefixIcon: const Icon(Icons.search),
-                  suffixIcon: _searchController.text.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear),
-                          onPressed: () {
-                            _searchController.clear();
-                            provider.setSearchQuery('');
-                          },
-                        )
-                      : null,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  filled: true,
-                  fillColor: Colors.grey.shade50,
-                ),
-              ),
-              const SizedBox(height: 12),
-              // Filter chips
-              Row(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+          child: Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildFilterChip('All', 'All'),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('Unpaid', 'Unpaid'),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('Paid', 'Paid'),
+                  Row(
+                    children: [
+                      Icon(Icons.tune, color: Colors.grey.shade700, size: 18),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Search & Filter',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey.shade800,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Search by name...',
+                      prefixIcon: const Icon(Icons.search),
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () {
+                                _searchController.clear();
+                                provider.setSearchQuery('');
+                              },
+                            )
+                          : null,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildFilterChip('All', 'All'),
+                      _buildFilterChip('Unpaid', 'Unpaid'),
+                      _buildFilterChip('Paid', 'Paid'),
+                    ],
+                  ),
                 ],
               ),
-            ],
+            ),
           ),
         );
       },
@@ -78,6 +95,17 @@ class _SearchFilterBarState extends State<SearchFilterBar> {
     return Consumer<DebtProvider>(
       builder: (context, provider, child) {
         final isSelected = provider.filterStatus == value;
+        final chipColor = value == 'All'
+            ? Colors.blue.shade100
+            : value == 'Unpaid'
+            ? Colors.orange.shade100
+            : Colors.green.shade100;
+        final labelColor = value == 'All'
+            ? Colors.blue.shade700
+            : value == 'Unpaid'
+            ? Colors.orange.shade700
+            : Colors.green.shade700;
+
         return FilterChip(
           label: Text(label),
           selected: isSelected,
@@ -86,26 +114,12 @@ class _SearchFilterBarState extends State<SearchFilterBar> {
               provider.setFilterStatus(value);
             }
           },
-          backgroundColor: Colors.grey.shade200,
-          selectedColor: value == 'All' 
-              ? Colors.blue.shade100
-              : value == 'Unpaid' 
-                  ? Colors.orange.shade100
-                  : Colors.green.shade100,
-          checkmarkColor: value == 'All'
-              ? Colors.blue.shade700
-              : value == 'Unpaid'
-                  ? Colors.orange.shade700
-                  : Colors.green.shade700,
+          backgroundColor: Colors.white,
+          selectedColor: chipColor,
+          checkmarkColor: labelColor,
           labelStyle: TextStyle(
-            color: isSelected
-                ? value == 'All'
-                    ? Colors.blue.shade700
-                    : value == 'Unpaid'
-                        ? Colors.orange.shade700
-                        : Colors.green.shade700
-                : Colors.grey.shade700,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            color: isSelected ? labelColor : Colors.grey.shade700,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
           ),
         );
       },

@@ -10,6 +10,7 @@ class DebtModel {
   final String dateBorrowed;
   final String? dueDate;
   final String? description;
+  final String? photoPath;
 
   DebtModel({
     this.id,
@@ -21,6 +22,7 @@ class DebtModel {
     required this.dateBorrowed,
     this.dueDate,
     this.description,
+    this.photoPath,
   });
 
   // Helper getters
@@ -54,6 +56,7 @@ class DebtModel {
       dateBorrowed: map['dateBorrowed'] as String,
       dueDate: map['dueDate'] as String?,
       description: map['description'] as String?,
+      photoPath: map['photoPath'] as String?,
     );
   }
 
@@ -68,6 +71,7 @@ class DebtModel {
       'dateBorrowed': dateBorrowed,
       'dueDate': dueDate,
       'description': description,
+      'photoPath': photoPath,
     };
   }
   
@@ -82,6 +86,7 @@ class DebtModel {
     String? dateBorrowed,
     String? dueDate,
     String? description,
+    String? photoPath,
   }) {
     return DebtModel(
       id: id ?? this.id,
@@ -93,6 +98,7 @@ class DebtModel {
       dateBorrowed: dateBorrowed ?? this.dateBorrowed,
       dueDate: dueDate ?? this.dueDate,
       description: description ?? this.description,
+      photoPath: photoPath ?? this.photoPath,
     );
   }
   

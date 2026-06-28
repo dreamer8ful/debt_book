@@ -3,19 +3,15 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../providers/debt_provider.dart';
 import '../models/debt_model1.dart';
+import '../providers/debt_provider.dart';
 import '../widgets/payment_dialog.dart';
 
 class DebtPersonCard extends StatefulWidget {
   final DebtModel debt;
   final VoidCallback onDelete;
 
-  const DebtPersonCard({
-    super.key,
-    required this.debt,
-    required this.onDelete,
-  });
+  const DebtPersonCard({super.key, required this.debt, required this.onDelete});
 
   @override
   State<DebtPersonCard> createState() => _DebtPersonCardState();
@@ -39,11 +35,13 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
 
     try {
       await context.read<DebtProvider>().addPayment(widget.debt.id!, result);
-      
+
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${widget.debt.type == 'lend' ? 'Collected' : 'Paid'} ${formatCurrency(result)} TSh'),
+          content: Text(
+            '${widget.debt.type == 'lend' ? 'Collected' : 'Paid'} ${formatCurrency(result)} TSh',
+          ),
           backgroundColor: Colors.green.shade600,
         ),
       );
@@ -60,8 +58,8 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
 
   void _showAddMoreDialog() {
     final moreController = TextEditingController();
-    bool isBorrow = widget.debt.type == 'borrow';
-    String actionText = isBorrow ? 'Borrow more from' : 'Lend more to';
+    final isBorrow = widget.debt.type == 'borrow';
+    final actionText = isBorrow ? 'Borrow more from' : 'Lend more to';
 
     showDialog(
       context: context,
@@ -71,14 +69,15 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Current remaining: ${formatCurrency(widget.debt.amount - widget.debt.paidAmount)}', 
-                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(
+              'Current remaining: ${formatCurrency(widget.debt.amount - widget.debt.paidAmount)}',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 16),
             TextField(
               controller: moreController,
               decoration: InputDecoration(
                 labelText: 'Additional Amount',
-                border: const OutlineInputBorder(),
                 prefixText: 'TSh ',
                 hintText: isBorrow ? 'Borrow more' : 'Lend more',
               ),
@@ -87,24 +86,40 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             onPressed: () {
-              double moreAmount = double.tryParse(moreController.text) ?? 0;
+              final moreAmount = double.tryParse(moreController.text) ?? 0;
               if (moreAmount > 0) {
-                Provider.of<DebtProvider>(context, listen: false).addMoreDebt(widget.debt.id!, moreAmount);
+                Provider.of<DebtProvider>(
+                  context,
+                  listen: false,
+                ).addMoreDebt(widget.debt.id!, moreAmount);
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Added ${formatCurrency(moreAmount)}')),
+                  SnackBar(
+                    content: Text('Added ${formatCurrency(moreAmount)}'),
+                  ),
                 );
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Invalid amount'), backgroundColor: Colors.red),
+                  const SnackBar(
+                    content: Text('Invalid amount'),
+                    backgroundColor: Colors.red,
+                  ),
                 );
               }
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue.shade700),
-            child: Text('Confirm ${isBorrow ? 'Borrow' : 'Lend'}', style: const TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue.shade700,
+            ),
+            child: Text(
+              'Confirm ${isBorrow ? 'Borrow' : 'Lend'}',
+              style: const TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -134,8 +149,12 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
 
   void _showUpdateDialog() {
     final nameController = TextEditingController(text: widget.debt.name);
-    final amountController = TextEditingController(text: widget.debt.amount.toStringAsFixed(0));
-    final dateController = TextEditingController(text: widget.debt.dateBorrowed);
+    final amountController = TextEditingController(
+      text: widget.debt.amount.toStringAsFixed(0),
+    );
+    final dateController = TextEditingController(
+      text: widget.debt.dateBorrowed,
+    );
 
     showDialog(
       context: context,
@@ -149,7 +168,6 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
                 controller: nameController,
                 decoration: const InputDecoration(
                   labelText: 'Name',
-                  border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.person),
                 ),
               ),
@@ -158,7 +176,6 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
                 controller: amountController,
                 decoration: InputDecoration(
                   labelText: 'Total Amount',
-                  border: const OutlineInputBorder(),
                   prefixText: 'TSh ',
                   helperText: 'Paid: ${formatCurrency(widget.debt.paidAmount)}',
                 ),
@@ -169,20 +186,21 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
                 controller: dateController,
                 decoration: const InputDecoration(
                   labelText: 'Date Borrowed',
-                  border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.calendar_today),
                   hintText: 'DD-MM-YYYY',
                 ),
                 readOnly: true,
                 onTap: () async {
-                  DateTime? picked = await showDatePicker(
+                  final picked = await showDatePicker(
                     context: context,
                     initialDate: DateTime.now(),
                     firstDate: DateTime(2020),
                     lastDate: DateTime.now(),
                   );
                   if (picked != null) {
-                    dateController.text = DateFormat('dd-MM-yyyy').format(picked);
+                    dateController.text = DateFormat(
+                      'dd-MM-yyyy',
+                    ).format(picked);
                   }
                 },
               ),
@@ -190,15 +208,21 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             onPressed: () {
-              double newAmount = double.tryParse(amountController.text) ?? widget.debt.amount;
-              
+              final newAmount =
+                  double.tryParse(amountController.text) ?? widget.debt.amount;
+
               if (newAmount < widget.debt.paidAmount) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Amount cannot be less than paid: ${formatCurrency(widget.debt.paidAmount)}'),
+                    content: Text(
+                      'Amount cannot be less than paid: ${formatCurrency(widget.debt.paidAmount)}',
+                    ),
                     backgroundColor: Colors.red,
                   ),
                 );
@@ -216,15 +240,20 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
                   dateBorrowed: dateController.text,
                   type: widget.debt.type,
                 );
-                
-                Provider.of<DebtProvider>(context, listen: false).updateDebt(updatedDebt);
+
+                Provider.of<DebtProvider>(
+                  context,
+                  listen: false,
+                ).updateDebt(updatedDebt);
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Debt updated successfully')),
                 );
               }
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade600),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green.shade600,
+            ),
             child: const Text('Update', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -233,10 +262,12 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
   }
 
   void _showDetailsDialog() {
-    bool isBorrow = widget.debt.type == 'borrow';
+    final isBorrow = widget.debt.type == 'borrow';
     final remaining = widget.debt.amount - widget.debt.paidAmount;
-    final percentPaid = widget.debt.amount > 0 ? (widget.debt.paidAmount / widget.debt.amount * 100) : 0;
-    
+    final percentPaid = widget.debt.amount > 0
+        ? (widget.debt.paidAmount / widget.debt.amount * 100)
+        : 0;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -256,14 +287,21 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: isBorrow ? Colors.green.shade50 : Colors.red.shade50,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
                     CircleAvatar(
                       radius: 24,
-                      backgroundColor: isBorrow ? Colors.green.shade100 : Colors.red.shade100,
-                      child: Icon(Icons.person, color: isBorrow ? Colors.green.shade700 : Colors.red.shade700),
+                      backgroundColor: isBorrow
+                          ? Colors.green.shade100
+                          : Colors.red.shade100,
+                      child: Icon(
+                        Icons.person,
+                        color: isBorrow
+                            ? Colors.green.shade700
+                            : Colors.red.shade700,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -272,11 +310,17 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
                         children: [
                           Text(
                             widget.debt.name,
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
                           ),
                           Text(
                             isBorrow ? 'Creditor' : 'Debtor',
-                            style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 13,
+                            ),
                           ),
                         ],
                       ),
@@ -285,8 +329,13 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
                 ),
               ),
               const SizedBox(height: 16),
-              
-              Text('Payment Progress', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey.shade700)),
+              Text(
+                'Payment Progress',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey.shade700,
+                ),
+              ),
               const SizedBox(height: 8),
               ClipRRect(
                 borderRadius: BorderRadius.circular(10),
@@ -294,26 +343,53 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
                   value: percentPaid / 100,
                   minHeight: 10,
                   backgroundColor: Colors.grey.shade300,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.green.shade600),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    Colors.green.shade600,
+                  ),
                 ),
               ),
               const SizedBox(height: 4),
-              Text('${percentPaid.toStringAsFixed(1)}% Paid', style: const TextStyle(fontSize: 12)),
+              Text(
+                '${percentPaid.toStringAsFixed(1)}% Paid',
+                style: const TextStyle(fontSize: 12),
+              ),
               const SizedBox(height: 16),
-              
-              _buildDetailRow('Type:', isBorrow ? 'Borrowed' : 'Lent', isBorrow ? Colors.green : Colors.red),
+              _buildDetailRow(
+                'Type:',
+                isBorrow ? 'Borrowed' : 'Lent',
+                isBorrow ? Colors.green : Colors.red,
+              ),
               const Divider(height: 20),
-              _buildDetailRow('Total Amount:', formatCurrency(widget.debt.amount), Colors.black87),
+              _buildDetailRow(
+                'Total Amount:',
+                formatCurrency(widget.debt.amount),
+                Colors.black87,
+              ),
               const Divider(height: 20),
-              _buildDetailRow('Amount Paid:', formatCurrency(widget.debt.paidAmount), Colors.green.shade700),
+              _buildDetailRow(
+                'Amount Paid:',
+                formatCurrency(widget.debt.paidAmount),
+                Colors.green.shade700,
+              ),
               const Divider(height: 20),
-              _buildDetailRow('Remaining:', formatCurrency(remaining), Colors.red.shade700, isBold: true),
+              _buildDetailRow(
+                'Remaining:',
+                formatCurrency(remaining),
+                Colors.red.shade700,
+                isBold: true,
+              ),
               const Divider(height: 20),
-              _buildDetailRow('Date Borrowed:', widget.debt.dateBorrowed, Colors.black87),
+              _buildDetailRow(
+                'Date Borrowed:',
+                widget.debt.dateBorrowed,
+                Colors.black87,
+              ),
               const Divider(height: 20),
-              _buildDetailRow('Status:', remaining <= 0 ? 'Fully Paid' : 'Pending', 
-                             remaining <= 0 ? Colors.green : Colors.orange.shade700),
-              
+              _buildDetailRow(
+                'Status:',
+                remaining <= 0 ? 'Fully Paid' : 'Pending',
+                remaining <= 0 ? Colors.green : Colors.orange.shade700,
+              ),
               const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.all(8),
@@ -328,7 +404,10 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
                     Expanded(
                       child: Text(
                         'Payment history coming soon',
-                        style: TextStyle(fontSize: 12, color: Colors.blue.shade700),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.blue.shade700,
+                        ),
                       ),
                     ),
                   ],
@@ -338,56 +417,74 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildDetailRow(String label, String value, Color valueColor, {bool isBold = false}) {
+  Widget _buildDetailRow(
+    String label,
+    String value,
+    Color valueColor, {
+    bool isBold = false,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: TextStyle(color: Colors.grey.shade600, fontSize: 14)),
         Text(
-          value, 
+          label,
+          style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+        ),
+        Text(
+          value,
           style: TextStyle(
-            color: valueColor, 
-            fontSize: 14, 
-            fontWeight: isBold ? FontWeight.bold : FontWeight.w600
+            color: valueColor,
+            fontSize: 14,
+            fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
           ),
         ),
       ],
     );
   }
-  
+
   @override
   Widget build(BuildContext context) {
-    bool isBorrow = widget.debt.type == 'borrow';
-    Color mainColor = isBorrow ? Colors.green.shade600 : Colors.red.shade600;
+    final isBorrow = widget.debt.type == 'borrow';
+    final mainColor = isBorrow ? Colors.green.shade600 : Colors.red.shade600;
     final remainingAmount = widget.debt.amount - widget.debt.paidAmount;
     final buttonText = widget.debt.type == 'lend' ? 'Collect' : 'Pay';
     final isPaid = remainingAmount <= 0;
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      elevation: 0,
+      clipBehavior: Clip.antiAlias,
+      surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-        side: BorderSide(color: _isExpanded ? mainColor : Colors.transparent, width: 1.5),
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(
+          color: _isExpanded
+              ? mainColor.withValues(alpha: 0.35)
+              : Colors.transparent,
+          width: 1.25,
+        ),
       ),
       child: Column(
         children: [
-          // DEFAULT VIEW - Collapsed
           InkWell(
             onTap: () => setState(() => _isExpanded = !_isExpanded),
             child: Padding(
-              padding: const EdgeInsets.all(12.0),
+              padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  Container(width: 4, height: 50, color: mainColor),
+                  Container(width: 4, height: 56, color: mainColor),
                   const SizedBox(width: 12),
                   CircleAvatar(
-                    radius: 20,
+                    radius: 22,
                     backgroundColor: mainColor.withValues(alpha: 0.1),
                     child: Icon(Icons.person, color: mainColor),
                   ),
@@ -398,7 +495,11 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
                       children: [
                         Text(
                           '${widget.debt.name} ${isBorrow ? '(Creditor)' : '(Debtor)'}',
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 15),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey.shade900,
+                            fontSize: 15,
+                          ),
                         ),
                         const SizedBox(height: 2),
                         Row(
@@ -413,7 +514,9 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
                               '${isBorrow ? 'Borrow' : 'Lend'} ${formatCurrency(remainingAmount)}',
                               style: TextStyle(
                                 fontSize: 13,
-                                decoration: isPaid ? TextDecoration.lineThrough : null,
+                                decoration: isPaid
+                                    ? TextDecoration.lineThrough
+                                    : null,
                                 color: isPaid ? Colors.grey : null,
                               ),
                             ),
@@ -421,7 +524,10 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
                         ),
                         Text(
                           'Since ${widget.debt.dateBorrowed}',
-                          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
                         ),
                       ],
                     ),
@@ -433,21 +539,30 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
                         backgroundColor: Colors.green.shade600,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(horizontal: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18),
+                        ),
                       ),
                       child: Text(buttonText),
                     ),
                   if (!_isExpanded && isPaid)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 7,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.green.shade100,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(18),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.check_circle, size: 16, color: Colors.green.shade700),
+                          Icon(
+                            Icons.check_circle,
+                            size: 16,
+                            color: Colors.green.shade700,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             'PAID',
@@ -464,21 +579,18 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
               ),
             ),
           ),
-
-          // EXPANDED VIEW
           if (_isExpanded) ...[
             const Divider(height: 1),
             Padding(
-              padding: const EdgeInsets.all(12.0),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  // Row 1: Delete button only
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       OutlinedButton.icon(
                         onPressed: () async {
-                          bool? confirmDelete = await _showDeleteConfirmation();
+                          final confirmDelete = await _showDeleteConfirmation();
                           if (confirmDelete == true) {
                             widget.onDelete();
                             if (mounted) {
@@ -491,8 +603,15 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
                             }
                           }
                         },
-                        icon: const Icon(Icons.delete, size: 16, color: Colors.red),
-                        label: const Text('Delete', style: TextStyle(color: Colors.red)),
+                        icon: const Icon(
+                          Icons.delete,
+                          size: 16,
+                          color: Colors.red,
+                        ),
+                        label: const Text(
+                          'Delete',
+                          style: TextStyle(color: Colors.red),
+                        ),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                           side: const BorderSide(color: Colors.red),
@@ -501,8 +620,6 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
                     ],
                   ),
                   const SizedBox(height: 16),
-
-                  // Row 2: Details za Amount
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -518,26 +635,51 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
                           children: [
                             Text(
                               '${widget.debt.name} ${isBorrow ? '(Creditor)' : '(Debtor)'}',
-                              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 15),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey.shade900,
+                                fontSize: 15,
+                              ),
                             ),
                             const SizedBox(height: 8),
-                            Row(children: [
-                              Icon(Icons.arrow_circle_down, size: 16, color: Colors.red.shade400),
-                              const SizedBox(width: 4),
-                              Text('Remaining ${formatCurrency(remainingAmount)}', 
-                                   style: TextStyle(
-                                     fontSize: 13,
-                                     decoration: isPaid ? TextDecoration.lineThrough : null,
-                                     color: isPaid ? Colors.grey : null,
-                                   )),
-                            ]),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.arrow_circle_down,
+                                  size: 16,
+                                  color: Colors.red.shade400,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Remaining ${formatCurrency(remainingAmount)}',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    decoration: isPaid
+                                        ? TextDecoration.lineThrough
+                                        : null,
+                                    color: isPaid ? Colors.grey : null,
+                                  ),
+                                ),
+                              ],
+                            ),
                             const SizedBox(height: 4),
-                            Row(children: [
-                              Icon(Icons.arrow_circle_up, size: 16, color: Colors.green.shade400),
-                              const SizedBox(width: 4),
-                              Text('Paid ${formatCurrency(widget.debt.paidAmount)}', 
-                                   style: TextStyle(color: Colors.green.shade700, fontSize: 13)),
-                            ]),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.arrow_circle_up,
+                                  size: 16,
+                                  color: Colors.green.shade400,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Paid ${formatCurrency(widget.debt.paidAmount)}',
+                                  style: TextStyle(
+                                    color: Colors.green.shade700,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ],
                         ),
                       ),
@@ -549,9 +691,13 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.green.shade600,
                                 foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
                               ),
-                              child: Text(isBorrow ? 'Borrow more' : 'Lend more'),
+                              child: Text(
+                                isBorrow ? 'Borrow more' : 'Lend more',
+                              ),
                             ),
                             const SizedBox(height: 8),
                             ElevatedButton(
@@ -559,7 +705,9 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.green.shade600,
                                 foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
                               ),
                               child: Text(buttonText),
                             ),
@@ -572,12 +720,13 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
                     alignment: Alignment.centerRight,
                     child: Text(
                       'Since ${widget.debt.dateBorrowed}',
-                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
-
-                  // Row 3: Update + Details
                   Row(
                     children: [
                       Expanded(
@@ -585,9 +734,14 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
                           onPressed: _showUpdateDialog,
                           style: OutlinedButton.styleFrom(
                             side: BorderSide(color: Colors.green.shade600),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
                           ),
-                          child: Text('Update', style: TextStyle(color: Colors.green.shade700)),
+                          child: Text(
+                            'Update',
+                            style: TextStyle(color: Colors.green.shade700),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -597,7 +751,9 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue.shade700,
                             foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
                           ),
                           icon: const Icon(Icons.info_outline, size: 18),
                           label: const Text('Details'),

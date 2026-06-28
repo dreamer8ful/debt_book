@@ -8,7 +8,9 @@ import '../widgets/app_drawer.dart';
 import '../providers/debt_provider.dart';
 import '../widgets/overview_card.dart';
 import '../widgets/debt_person_card.dart';
+import '../widgets/debt_search_delegate.dart';
 import 'add_transaction_screen.dart';
+import 'transaction_report_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,7 +19,8 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -66,15 +69,20 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               children: [
                 Icon(Icons.book, color: Colors.amber),
                 SizedBox(width: 8),
-                Text('Debt Book', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text(
+                  'Debt Book',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
               ],
             ),
             actions: [
               IconButton(
                 icon: const Icon(Icons.search),
                 onPressed: () {
-                  // Focus on search field in SearchFilterBar
-                  // You can add a FocusNode to programmatically focus
+                  showSearch(
+                    context: context,
+                    delegate: DebtSearchDelegate(debtProvider),
+                  );
                 },
               ),
               const SizedBox(width: 16),
@@ -86,8 +94,18 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               indicatorColor: Colors.white,
               indicatorWeight: 3,
               tabs: [
-                Tab(child: Text('LEND\n${formatCurrency(debtProvider.totalLent)}', textAlign: TextAlign.center)),
-                Tab(child: Text('BORROW\n${formatCurrency(debtProvider.totalBorrow)}', textAlign: TextAlign.center)),
+                Tab(
+                  child: Text(
+                    'LEND\n${formatCurrency(debtProvider.totalLent)}',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                Tab(
+                  child: Text(
+                    'BORROW\n${formatCurrency(debtProvider.totalBorrow)}',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
               ],
             ),
           ),
@@ -103,7 +121,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => AddTransactionScreen(type: isLendTab ? 'lend' : 'borrow'),
+                  builder: (context) =>
+                      AddTransactionScreen(type: isLendTab ? 'lend' : 'borrow'),
                 ),
               ).then((_) {
                 // Refresh data when returning from add screen
@@ -119,17 +138,32 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   Widget _buildTabContent(DebtProvider provider, bool isLend) {
-    final list = isLend ? provider.filteredLendList : provider.filteredBorrowList;
+    final list = isLend
+        ? provider.filteredLendList
+        : provider.filteredBorrowList;
     final tabKey = isLend ? 'lend' : 'borrow';
 
     return Column(
       children: [
         const SearchFilterBar(),
-        OverviewCard(isLend: isLend),
+        OverviewCard(
+          isLend: isLend,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) =>
+                    TransactionReportScreen(initialIndex: isLend ? 0 : 1),
+              ),
+            );
+          },
+        ),
         Expanded(
           child: list.isEmpty
               ? Center(
-                  key: ValueKey('empty_${tabKey}_${provider.searchQuery}_${provider.filterStatus}'),
+                  key: ValueKey(
+                    'empty_${tabKey}_${provider.searchQuery}_${provider.filterStatus}',
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.all(40.0),
                     child: Column(
@@ -142,7 +176,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          provider.searchQuery.isNotEmpty || provider.filterStatus != 'All'
+                          provider.searchQuery.isNotEmpty ||
+                                  provider.filterStatus != 'All'
                               ? 'No results found'
                               : 'No transactions yet',
                           style: TextStyle(
@@ -165,7 +200,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   ),
                 )
               : ListView.builder(
-                  key: ValueKey('list_${tabKey}_${provider.searchQuery}_${provider.filterStatus}'),
+                  key: ValueKey(
+                    'list_${tabKey}_${provider.searchQuery}_${provider.filterStatus}',
+                  ),
                   padding: const EdgeInsets.only(top: 8),
                   itemCount: list.length,
                   itemBuilder: (context, index) {
@@ -179,7 +216,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           context: context,
                           builder: (ctx) => AlertDialog(
                             title: const Text('Delete Transaction?'),
-                            content: Text('Are you sure you want to delete ${debt.name}?'),
+                            content: Text(
+                              'Are you sure you want to delete ${debt.name}?',
+                            ),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.of(ctx).pop(false),
@@ -187,12 +226,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                               ),
                               TextButton(
                                 onPressed: () => Navigator.of(ctx).pop(true),
-                                child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                                child: const Text(
+                                  'Delete',
+                                  style: TextStyle(color: Colors.red),
+                                ),
                               ),
                             ],
                           ),
                         );
-                        
+
                         if (confirm == true) {
                           await provider.deleteDebt(debt.id!);
                           if (mounted) {

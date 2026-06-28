@@ -18,7 +18,7 @@ class _AddPaymentScreenState extends State<AddPaymentScreen> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _noteController = TextEditingController();
-  
+
   bool _isLoading = false;
   late double _remainingAmount;
 
@@ -49,11 +49,13 @@ class _AddPaymentScreenState extends State<AddPaymentScreen> {
 
     try {
       await provider.addPayment(widget.debt.id!, payAmount);
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Payment of ${formatCurrency(payAmount)} TSh recorded'),
+            content: Text(
+              'Payment of ${formatCurrency(payAmount)} TSh recorded',
+            ),
             backgroundColor: Colors.green.shade600,
           ),
         );
@@ -88,9 +90,8 @@ class _AddPaymentScreenState extends State<AddPaymentScreen> {
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
           children: [
-            // Card ya Maelezo ya Deni
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -116,7 +117,9 @@ class _AddPaymentScreenState extends State<AddPaymentScreen> {
                                 ),
                               ),
                               Text(
-                                isBorrow ? 'You owe this person' : 'This person owes you',
+                                isBorrow
+                                    ? 'You owe this person'
+                                    : 'This person owes you',
                                 style: TextStyle(
                                   color: Colors.grey.shade600,
                                   fontSize: 13,
@@ -128,85 +131,97 @@ class _AddPaymentScreenState extends State<AddPaymentScreen> {
                       ],
                     ),
                     const Divider(height: 24),
-                    _buildDetailRow('Total Amount', formatCurrency(widget.debt.amount)),
+                    _buildDetailRow(
+                      'Total Amount',
+                      formatCurrency(widget.debt.amount),
+                    ),
                     const SizedBox(height: 8),
-                    _buildDetailRow('Already Paid', formatCurrency(widget.debt.paidAmount), Colors.green.shade700),
+                    _buildDetailRow(
+                      'Already Paid',
+                      formatCurrency(widget.debt.paidAmount),
+                      Colors.green.shade700,
+                    ),
                     const SizedBox(height: 8),
-                    _buildDetailRow('Remaining', formatCurrency(_remainingAmount), Colors.red.shade600, true),
+                    _buildDetailRow(
+                      'Remaining',
+                      formatCurrency(_remainingAmount),
+                      Colors.red.shade600,
+                      true,
+                    ),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 24),
-
-            // Amount Input
-            Text(
-              '$actionText Amount',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            TextFormField(
-              controller: _amountController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
-              ],
-              decoration: InputDecoration(
-                hintText: 'Enter amount',
-                prefixText: 'TSh ',
-                suffixIcon: TextButton(
-                  onPressed: () {
-                    _amountController.text = _remainingAmount.toStringAsFixed(0);
-                  },
-                  child: const Text('Pay All'),
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: mainColor, width: 2),
-                ),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter amount';
-                }
-                final amount = double.tryParse(value);
-                if (amount == null || amount <= 0) {
-                  return 'Enter valid amount';
-                }
-                if (amount > _remainingAmount) {
-                  return 'Amount exceeds remaining ${formatCurrency(_remainingAmount)}';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 20),
-
-            // Note Input
-            Text(
-              'Note (Optional)',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            TextFormField(
-              controller: _noteController,
-              maxLines: 3,
-              decoration: InputDecoration(
-                hintText: 'Add a note...',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: mainColor, width: 2),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '$actionText Amount',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _amountController,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(
+                          RegExp(r'^\d+\.?\d{0,2}'),
+                        ),
+                      ],
+                      decoration: InputDecoration(
+                        hintText: 'Enter amount',
+                        prefixText: 'TSh ',
+                        suffixIcon: TextButton(
+                          onPressed: () {
+                            _amountController.text = _remainingAmount
+                                .toStringAsFixed(0);
+                          },
+                          child: const Text('Pay All'),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter amount';
+                        }
+                        final amount = double.tryParse(value);
+                        if (amount == null || amount <= 0) {
+                          return 'Enter valid amount';
+                        }
+                        if (amount > _remainingAmount) {
+                          return 'Amount exceeds remaining ${formatCurrency(_remainingAmount)}';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Note (Optional)',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _noteController,
+                      maxLines: 3,
+                      decoration: InputDecoration(hintText: 'Add a note...'),
+                    ),
+                  ],
                 ),
               ),
             ),
             const SizedBox(height: 32),
 
-            // Submit Button
             SizedBox(
               height: 50,
               child: ElevatedButton(
@@ -215,7 +230,7 @@ class _AddPaymentScreenState extends State<AddPaymentScreen> {
                   backgroundColor: mainColor,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                 ),
                 child: _isLoading
@@ -229,7 +244,10 @@ class _AddPaymentScreenState extends State<AddPaymentScreen> {
                       )
                     : Text(
                         '$actionText ${formatCurrency(double.tryParse(_amountController.text) ?? 0)} TSh',
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
               ),
             ),
@@ -239,7 +257,12 @@ class _AddPaymentScreenState extends State<AddPaymentScreen> {
     );
   }
 
-  Widget _buildDetailRow(String label, String value, [Color? color, bool isBold = false]) {
+  Widget _buildDetailRow(
+    String label,
+    String value, [
+    Color? color,
+    bool isBold = false,
+  ]) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [

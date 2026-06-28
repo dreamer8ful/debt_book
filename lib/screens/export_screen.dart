@@ -26,7 +26,8 @@ class _ExportScreenState extends State<ExportScreen> {
     return allDebts.where((debt) {
       final isPaidOff = debt.paidAmount >= debt.amount;
       final statusOk = (_active && !isPaidOff) || (_paidOff && isPaidOff);
-      final typeOk = (_lend && debt.type == 'lend') || (_borrow && debt.type == 'borrow');
+      final typeOk =
+          (_lend && debt.type == 'lend') || (_borrow && debt.type == 'borrow');
       return statusOk && typeOk;
     }).toList();
   }
@@ -76,68 +77,107 @@ class _ExportScreenState extends State<ExportScreen> {
         title: const Text('Export Data'),
         actions: [
           if (_isLoading)
-            const Center(child: Padding(
-              padding: EdgeInsets.all(16),
-              child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
-            ))
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text('Debt Book', style: TextStyle(fontWeight: FontWeight.bold)),
-          const ListTile(leading: Icon(Icons.book), title: Text('Master Book')),
-          const Divider(),
-          
-          const Text('Status', style: TextStyle(fontWeight: FontWeight.bold)),
-          CheckboxListTile(
-            title: const Text('Active'),
-            value: _active,
-            onChanged: (v) => setState(() => _active = v!),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.book),
+              title: const Text('Master Book'),
+              subtitle: const Text('Choose which records to export'),
+            ),
           ),
-          CheckboxListTile(
-            title: const Text('Paid Off'),
-            value: _paidOff,
-            onChanged: (v) => setState(() => _paidOff = v!),
-          ),
-          const Divider(),
-          
-          const Text('Type', style: TextStyle(fontWeight: FontWeight.bold)),
-          CheckboxListTile(
-            title: const Text('Lend'),
-            value: _lend,
-            onChanged: (v) => setState(() => _lend = v!),
-          ),
-          CheckboxListTile(
-            title: const Text('Borrow'),
-            value: _borrow,
-            onChanged: (v) => setState(() => _borrow = v!),
+          const SizedBox(height: 16),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Status',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  CheckboxListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Active'),
+                    value: _active,
+                    onChanged: (v) => setState(() => _active = v!),
+                  ),
+                  CheckboxListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Paid Off'),
+                    value: _paidOff,
+                    onChanged: (v) => setState(() => _paidOff = v!),
+                  ),
+                  const Divider(),
+                  const Text(
+                    'Type',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  CheckboxListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Lend'),
+                    value: _lend,
+                    onChanged: (v) => setState(() => _lend = v!),
+                  ),
+                  CheckboxListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Borrow'),
+                    value: _borrow,
+                    onChanged: (v) => setState(() => _borrow = v!),
+                  ),
+                ],
+              ),
+            ),
           ),
           const SizedBox(height: 20),
-          
           if (_lastPath != null)
-            Text('Stored at: $_lastPath', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+            Text(
+              'Stored at: $_lastPath',
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+            ),
           const SizedBox(height: 20),
-          
-          Row(children: [
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: _isLoading ? null : _exportExcel,
-                icon: const Icon(Icons.table_chart),
-                label: const Text('EXPORT XLS'),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade700),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: _isLoading ? null : _exportExcel,
+                  icon: const Icon(Icons.table_chart),
+                  label: const Text('EXPORT XLS'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green.shade700,
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: _isLoading ? null : _exportPdf,
-                icon: const Icon(Icons.picture_as_pdf),
-                label: const Text('EXPORT PDF'),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade700),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: _isLoading ? null : _exportPdf,
+                  icon: const Icon(Icons.picture_as_pdf),
+                  label: const Text('EXPORT PDF'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red.shade700,
+                  ),
+                ),
               ),
-            ),
-          ]),
+            ],
+          ),
         ],
       ),
     );
