@@ -42,7 +42,7 @@ class _ExportScreenState extends State<ExportScreen> {
       _isLoading = false;
       _lastPath = path;
     });
-    _showSuccess('Excel saved');
+    _showSuccess('Excel export complete');
   }
 
   Future<void> _exportPdf() async {
@@ -55,7 +55,7 @@ class _ExportScreenState extends State<ExportScreen> {
       _isLoading = false;
       _lastPath = path;
     });
-    _showSuccess('PDF saved');
+    _showSuccess('PDF export complete');
   }
 
   void _showSuccess(String msg) {
@@ -63,7 +63,7 @@ class _ExportScreenState extends State<ExportScreen> {
       SnackBar(
         content: Text('$msg at $_lastPath'),
         action: SnackBarAction(
-          label: 'OPEN',
+          label: 'Open File',
           onPressed: () => _exportService.openFile(_lastPath!),
         ),
       ),
@@ -75,6 +75,15 @@ class _ExportScreenState extends State<ExportScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Export Data'),
+        flexibleSpace: const DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF0D6B8A), Color(0xFF0A536B)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         actions: [
           if (_isLoading)
             const Center(
@@ -97,8 +106,14 @@ class _ExportScreenState extends State<ExportScreen> {
         children: [
           Card(
             child: ListTile(
-              leading: const Icon(Icons.book),
-              title: const Text('Master Book'),
+              leading: const CircleAvatar(
+                backgroundColor: Color(0x140D6B8A),
+                child: Icon(Icons.book, color: Color(0xFF0D6B8A)),
+              ),
+              title: const Text(
+                'Master Book',
+                style: TextStyle(fontWeight: FontWeight.w800),
+              ),
               subtitle: const Text('Choose which records to export'),
             ),
           ),
@@ -111,7 +126,7 @@ class _ExportScreenState extends State<ExportScreen> {
                 children: [
                   const Text(
                     'Status',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(fontWeight: FontWeight.w800),
                   ),
                   CheckboxListTile(
                     contentPadding: EdgeInsets.zero,
@@ -128,7 +143,7 @@ class _ExportScreenState extends State<ExportScreen> {
                   const Divider(),
                   const Text(
                     'Type',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(fontWeight: FontWeight.w800),
                   ),
                   CheckboxListTile(
                     contentPadding: EdgeInsets.zero,
@@ -149,7 +164,7 @@ class _ExportScreenState extends State<ExportScreen> {
           const SizedBox(height: 20),
           if (_lastPath != null)
             Text(
-              'Stored at: $_lastPath',
+              'Saved to: $_lastPath',
               style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
             ),
           const SizedBox(height: 20),
@@ -159,9 +174,10 @@ class _ExportScreenState extends State<ExportScreen> {
                 child: ElevatedButton.icon(
                   onPressed: _isLoading ? null : _exportExcel,
                   icon: const Icon(Icons.table_chart),
-                  label: const Text('EXPORT XLS'),
+                  label: const Text('Export Excel'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green.shade700,
+                    backgroundColor: const Color(0xFF2E9E5B),
+                    foregroundColor: Colors.white,
                   ),
                 ),
               ),
@@ -170,9 +186,10 @@ class _ExportScreenState extends State<ExportScreen> {
                 child: ElevatedButton.icon(
                   onPressed: _isLoading ? null : _exportPdf,
                   icon: const Icon(Icons.picture_as_pdf),
-                  label: const Text('EXPORT PDF'),
+                  label: const Text('Export PDF'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red.shade700,
+                    backgroundColor: const Color(0xFFB23A48),
+                    foregroundColor: Colors.white,
                   ),
                 ),
               ),

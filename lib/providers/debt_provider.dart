@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:debt_book/models/debt_model1.dart';
+import 'package:debt_book/models/debt_history_entry.dart';
 import 'package:debt_book/services/database_helper.dart';
 
 class DebtProvider with ChangeNotifier {
@@ -134,13 +135,21 @@ class DebtProvider with ChangeNotifier {
     await loadAllData();
   }
 
+  Future<List<DebtHistoryEntry>> getDebtHistory(int debtId) async {
+    return DatabaseHelper.instance.getDebtHistory(debtId);
+  }
+
   Future<void> deleteDebt(int id) async {
     await DatabaseHelper.instance.deleteDebt(id);
     await loadAllData();
   }
   
-  Future<void> addPayment(int id, double payAmount) async {
-    await DatabaseHelper.instance.updatePaidAmount(id, payAmount);
+  Future<void> addPayment(int id, double payAmount, {String? note}) async {
+    await DatabaseHelper.instance.updatePaidAmount(
+      id,
+      payAmount,
+      note: note,
+    );
     await loadAllData();
   }
   

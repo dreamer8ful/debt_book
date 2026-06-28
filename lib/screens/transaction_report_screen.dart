@@ -82,21 +82,38 @@ class _TransactionReportScreenState extends State<TransactionReportScreen>
 
     return Column(
       children: [
-        const SearchFilterBar(),
         OverviewCard(isLend: isLend),
+        const SearchFilterBar(),
         Expanded(
           child: list.isEmpty
               ? Center(
                   child: Padding(
                     padding: const EdgeInsets.all(32.0),
-                    child: Text(
-                      provider.searchQuery.isNotEmpty ||
-                              provider.filterStatus != 'All'
-                          ? 'No results found'
-                          : (isLend
-                                ? 'No lend transactions yet'
-                                : 'No borrow transactions yet'),
-                      style: TextStyle(color: Colors.grey.shade600),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          provider.searchQuery.isNotEmpty ||
+                                  provider.filterStatus != 'All'
+                              ? 'No transactions match your filters'
+                              : (isLend
+                                    ? 'No lend transactions yet. Add your first one.'
+                                    : 'No borrow transactions yet. Add your first one.'),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.grey.shade600),
+                        ),
+                        const SizedBox(height: 8),
+                        if (provider.searchQuery.isNotEmpty ||
+                            provider.filterStatus != 'All')
+                          TextButton.icon(
+                            onPressed: () {
+                              provider.setFilterStatus('All');
+                              provider.setSearchQuery('');
+                            },
+                            icon: const Icon(Icons.clear_all),
+                            label: const Text('Reset Filters'),
+                          ),
+                      ],
                     ),
                   ),
                 )

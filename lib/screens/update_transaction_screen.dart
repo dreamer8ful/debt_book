@@ -11,16 +11,17 @@ import '../models/debt_model1.dart';
 import '../providers/app_settings_provider.dart';
 import '../providers/debt_provider.dart';
 
-class AddTransactionScreen extends StatefulWidget {
-  final String type; // 'lend' au 'borrow'
+class UpdateTransactionScreen extends StatefulWidget {
+  final DebtModel debt;
 
-  const AddTransactionScreen({super.key, required this.type});
+  const UpdateTransactionScreen({super.key, required this.debt});
 
   @override
-  State<AddTransactionScreen> createState() => _AddTransactionScreenState();
+  State<UpdateTransactionScreen> createState() =>
+      _UpdateTransactionScreenState();
 }
 
-class _AddTransactionScreenState extends State<AddTransactionScreen> {
+class _UpdateTransactionScreenState extends State<UpdateTransactionScreen> {
   final _formKey = GlobalKey<FormState>();
   final _imagePicker = ImagePicker();
 
@@ -37,6 +38,21 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   String? _photoPath;
 
   @override
+  void initState() {
+    super.initState();
+    nameController.text = widget.debt.name;
+    phoneController.text = widget.debt.phone ?? '';
+    amountController.text = widget.debt.amount.toStringAsFixed(0);
+    descController.text = widget.debt.description ?? '';
+    _photoPath = widget.debt.photoPath;
+    hasDueDate = widget.debt.dueDate != null;
+    selectedDate = _parseDate(widget.debt.dateBorrowed) ?? DateTime.now();
+    dueDate = widget.debt.dueDate == null
+        ? null
+        : _parseDate(widget.debt.dueDate!);
+  }
+
+  @override
   void dispose() {
     nameController.dispose();
     phoneController.dispose();
@@ -46,11 +62,19 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     super.dispose();
   }
 
+  DateTime? _parseDate(String value) {
+    try {
+      return DateFormat('dd-MM-yyyy').parseStrict(value);
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> _selectDate(BuildContext context, bool isDueDate) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: isDueDate
-          ? DateTime.now().add(const Duration(days: 30))
+          ? dueDate ?? DateTime.now().add(const Duration(days: 30))
           : selectedDate,
       firstDate: DateTime(2020),
       lastDate: DateTime(2030),
@@ -67,10 +91,13 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 
   Future<void> _pickFromContacts() async {
-    final permission = await FlutterContacts.permissions.request(PermissionType.read);
+    final permission = await FlutterContacts.permissions.request(
+      PermissionType.read,
+    );
     if (!mounted) return;
 
-    if (permission != PermissionStatus.granted && permission != PermissionStatus.limited) {
+    if (permission != PermissionStatus.granted &&
+        permission != PermissionStatus.limited) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Contacts permission is required to pick a person'),
@@ -168,13 +195,28 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     );
   }
 
-  void _saveTransaction() {
+  void _updateTransaction() {
     if (_formKey.currentState!.validate()) {
-      final debt = DebtModel(
+      final newAmount = double.parse(amountController.text);
+      if (newAmount < widget.debt.paidAmount) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Amount cannot be less than paid: ${widget.debt.paidAmount.toStringAsFixed(0)} TSh',
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      final updatedDebt = DebtModel(
+        id: widget.debt.id,
         name: nameController.text.trim(),
         phone: phoneController.text.trim(),
-        type: widget.type,
-        amount: double.parse(amountController.text),
+        type: widget.debt.type,
+        amount: newAmount,
+        paidAmount: widget.debt.paidAmount,
         dateBorrowed: DateFormat('dd-MM-yyyy').format(selectedDate),
         dueDate: hasDueDate && dueDate != null
             ? DateFormat('dd-MM-yyyy').format(dueDate!)
@@ -185,24 +227,20 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         photoPath: _photoPath,
       );
 
-      Provider.of<DebtProvider>(context, listen: false).addDebt(debt);
+      Provider.of<DebtProvider>(context, listen: false).updateDebt(updatedDebt);
       Navigator.pop(context);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '${widget.type == 'lend' ? 'Lend' : 'Borrow'} added successfully',
-          ),
-        ),
+        const SnackBar(content: Text('Debt updated successfully')),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isLend = widget.type == 'lend';
+    final isLend = widget.debt.type == 'lend';
     final mainColor = isLend ? Colors.red.shade600 : Colors.green.shade600;
-    final title = isLend ? 'Add Lend' : 'Add Borrow';
+    final title = isLend ? 'Update Lend' : 'Update Borrow';
     final settings = context.watch<AppSettingsProvider>();
 
     return Scaffold(
@@ -232,7 +270,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 child: _sectionHeader(
                   icon: Icons.person_outline,
                   title: 'Person',
-                  subtitle: 'Who is involved in this transaction',
+                  subtitle: 'Update the participant information',
                 ),
               ),
               const SizedBox(height: 8),
@@ -300,7 +338,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 child: _sectionHeader(
                   icon: Icons.request_quote_outlined,
                   title: 'Transaction',
-                  subtitle: 'Amount, dates, and optional details',
+                  subtitle: 'Adjust amount, dates, and details',
                 ),
               ),
               const SizedBox(height: 8),
@@ -406,7 +444,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                       TextFormField(
                         controller: descController,
                         textInputAction: TextInputAction.done,
-                        onFieldSubmitted: (_) => _saveTransaction(),
+                        onFieldSubmitted: (_) => _updateTransaction(),
                         decoration: const InputDecoration(
                           labelText: 'Description (Optional)',
                           alignLabelWithHint: true,
@@ -464,10 +502,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _saveTransaction,
+        onPressed: _updateTransaction,
         backgroundColor: mainColor,
         icon: const Icon(Icons.check, color: Colors.white),
-        label: const Text('Save Transaction', style: TextStyle(color: Colors.white)),
+        label: const Text('Update Transaction', style: TextStyle(color: Colors.white)),
       ),
     );
   }

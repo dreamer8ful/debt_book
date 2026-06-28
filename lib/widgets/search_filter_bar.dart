@@ -10,79 +10,51 @@ class SearchFilterBar extends StatefulWidget {
 }
 
 class _SearchFilterBarState extends State<SearchFilterBar> {
-  final TextEditingController _searchController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    _searchController.addListener(() {
-      Provider.of<DebtProvider>(
-        context,
-        listen: false,
-      ).setSearchQuery(_searchController.text);
-    });
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Consumer<DebtProvider>(
       builder: (context, provider, child) {
+        final hasActiveFilter = provider.filterStatus != 'All';
         return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-          child: Card(
+          padding: const EdgeInsets.fromLTRB(16, 6, 16, 4),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 170),
+            curve: Curves.easeOutCubic,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              gradient: const LinearGradient(
+                colors: [Color(0xFFFFFFFF), Color(0xFFF8FBFD)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              border: Border.all(
+                color: hasActiveFilter
+                    ? const Color(0xFF0D6B8A).withValues(alpha: 0.28)
+                    : const Color(0xFFE1E8EF),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF0D6B8A).withValues(
+                    alpha: hasActiveFilter ? 0.08 : 0.0,
+                  ),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
             child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.tune, color: Colors.grey.shade700, size: 18),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Search & Filter',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey.shade800,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      hintText: 'Search by name...',
-                      prefixIcon: const Icon(Icons.search),
-                      suffixIcon: _searchController.text.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear),
-                              onPressed: () {
-                                _searchController.clear();
-                                provider.setSearchQuery('');
-                              },
-                            )
-                          : null,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      _buildFilterChip('All', 'All'),
-                      _buildFilterChip('Unpaid', 'Unpaid'),
-                      _buildFilterChip('Paid', 'Paid'),
-                    ],
-                  ),
-                ],
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+              child: Center(
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 8,
+                  runSpacing: 6,
+                  children: [
+                    _buildFilterChip('All', 'All'),
+                    _buildFilterChip('Unpaid', 'Unpaid'),
+                    _buildFilterChip('Paid', 'Paid'),
+                  ],
+                ),
               ),
             ),
           ),
@@ -106,20 +78,33 @@ class _SearchFilterBarState extends State<SearchFilterBar> {
             ? Colors.orange.shade700
             : Colors.green.shade700;
 
-        return FilterChip(
-          label: Text(label),
-          selected: isSelected,
-          onSelected: (selected) {
-            if (selected) {
-              provider.setFilterStatus(value);
-            }
-          },
-          backgroundColor: Colors.white,
-          selectedColor: chipColor,
-          checkmarkColor: labelColor,
-          labelStyle: TextStyle(
-            color: isSelected ? labelColor : Colors.grey.shade700,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+        return AnimatedScale(
+          scale: isSelected ? 1.0 : 0.97,
+          duration: const Duration(milliseconds: 140),
+          curve: Curves.easeOutCubic,
+          child: Semantics(
+            button: true,
+            selected: isSelected,
+            label: 'Filter: $label',
+            child: FilterChip(
+              label: Text(label),
+              selected: isSelected,
+              materialTapTargetSize: MaterialTapTargetSize.padded,
+              onSelected: (selected) {
+                if (selected) {
+                  provider.setFilterStatus(value);
+                }
+              },
+              side: BorderSide(color: isSelected ? labelColor.withValues(alpha: 0.25) : const Color(0xFFD9E1E8)),
+              backgroundColor: Colors.white,
+              selectedColor: chipColor,
+              checkmarkColor: labelColor,
+              labelStyle: TextStyle(
+                color: isSelected ? labelColor : Colors.grey.shade700,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                fontSize: 12,
+              ),
+            ),
           ),
         );
       },

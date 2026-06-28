@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
+import '../providers/app_settings_provider.dart';
 import '../models/debt_model1.dart';
 import '../providers/debt_provider.dart';
 
@@ -36,7 +36,7 @@ class _AddPaymentScreenState extends State<AddPaymentScreen> {
   }
 
   String formatCurrency(double amount) {
-    return NumberFormat('#,##0', 'en_US').format(amount);
+    return context.read<AppSettingsProvider>().formatCurrency(amount);
   }
 
   Future<void> _submitPayment() async {
@@ -48,13 +48,19 @@ class _AddPaymentScreenState extends State<AddPaymentScreen> {
     final provider = context.read<DebtProvider>();
 
     try {
-      await provider.addPayment(widget.debt.id!, payAmount);
+      await provider.addPayment(
+        widget.debt.id!,
+        payAmount,
+        note: _noteController.text.trim().isEmpty
+            ? null
+            : _noteController.text.trim(),
+      );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Payment of ${formatCurrency(payAmount)} TSh recorded',
+              'Payment of ${formatCurrency(payAmount)} recorded',
             ),
             backgroundColor: Colors.green.shade600,
           ),
@@ -179,7 +185,7 @@ class _AddPaymentScreenState extends State<AddPaymentScreen> {
                       ],
                       decoration: InputDecoration(
                         hintText: 'Enter amount',
-                        prefixText: 'TSh ',
+                        prefixText: context.read<AppSettingsProvider>().currencySymbol,
                         suffixIcon: TextButton(
                           onPressed: () {
                             _amountController.text = _remainingAmount
@@ -243,7 +249,7 @@ class _AddPaymentScreenState extends State<AddPaymentScreen> {
                         ),
                       )
                     : Text(
-                        '$actionText ${formatCurrency(double.tryParse(_amountController.text) ?? 0)} TSh',
+                        '$actionText ${formatCurrency(double.tryParse(_amountController.text) ?? 0)}',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

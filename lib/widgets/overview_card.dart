@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import '../providers/app_settings_provider.dart';
 import '../providers/debt_provider.dart';
 
 class OverviewCard extends StatelessWidget {
@@ -8,8 +8,8 @@ class OverviewCard extends StatelessWidget {
   final VoidCallback? onTap;
   const OverviewCard({super.key, required this.isLend, this.onTap});
 
-  String formatCurrency(double amount) {
-    return '${NumberFormat('#,##0', 'en_US').format(amount)} TSh';
+  String formatCurrency(BuildContext context, double amount) {
+    return context.read<AppSettingsProvider>().formatCurrency(amount);
   }
 
   @override
@@ -32,20 +32,31 @@ class OverviewCard extends StatelessWidget {
 
     final isFiltering =
         provider.searchQuery.isNotEmpty || provider.filterStatus != 'All';
-    final cardColor = isLend ? Colors.red.shade50 : Colors.green.shade50;
+    final cardColor = isLend ? const Color(0xFFFFF2F3) : const Color(0xFFEFFAF3);
     final textColor = isLend ? Colors.red.shade700 : Colors.green.shade700;
 
     return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.fromLTRB(16, 10, 16, 6),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          colors: [cardColor, Colors.white],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x12000000),
+            blurRadius: 12,
+            offset: Offset(0, 6),
+          ),
+        ],
         border: Border.all(
           color: isFiltering
               ? textColor.withValues(alpha: 0.5)
-              : Colors.transparent,
-          width: isFiltering ? 2 : 0,
+              : const Color(0xFFDCE4EB),
+          width: isFiltering ? 2 : 1,
         ),
       ),
       child: Column(
@@ -69,7 +80,7 @@ class OverviewCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 18,
                             color: Colors.grey[900],
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w800,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -92,7 +103,7 @@ class OverviewCard extends StatelessWidget {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: textColor.withValues(alpha: 0.15),
+                              color: textColor.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Row(
@@ -126,21 +137,23 @@ class OverviewCard extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Divider(color: Colors.grey[300], height: 1),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           _buildAmountRow(
+            context,
             label: isLend ? 'Total lend amount' : 'Total borrow amount',
             amount: totalAmount,
             color: Colors.red,
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
           _buildAmountRow(
+            context,
             label: isLend ? 'Collected' : 'Paid',
             amount: paidAmount,
             color: Colors.green,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Align(
             alignment: Alignment.centerRight,
             child: FractionallySizedBox(
@@ -148,8 +161,9 @@ class OverviewCard extends StatelessWidget {
               child: Divider(color: Colors.grey[400], thickness: 1, height: 1),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           _buildAmountRow(
+            context,
             label: 'Remaining',
             amount: remainingAmount,
             color: Colors.amber.shade800,
@@ -159,7 +173,8 @@ class OverviewCard extends StatelessWidget {
     );
   }
 
-  Widget _buildAmountRow({
+  Widget _buildAmountRow(
+    BuildContext context, {
     required String label,
     required double amount,
     required Color color,
@@ -170,15 +185,15 @@ class OverviewCard extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            fontSize: 14,
+            fontSize: 13,
             color: Colors.grey[700],
             fontWeight: FontWeight.w500,
           ),
         ),
         Text(
-          formatCurrency(amount),
+          formatCurrency(context, amount),
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 15,
             fontWeight: FontWeight.bold,
             color: color,
           ),

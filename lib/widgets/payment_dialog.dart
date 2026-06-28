@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../models/debt_model1.dart';
-import 'package:intl/intl.dart';
+import '../providers/app_settings_provider.dart';
 
 class PaymentDialog extends StatefulWidget {
   final DebtModel debt;
@@ -17,12 +18,12 @@ class _PaymentDialogState extends State<PaymentDialog> {
   final _payController = TextEditingController();
   
   String formatCurrency(double amount) {
-    return NumberFormat('#,##0', 'en_US').format(amount);
+    return context.read<AppSettingsProvider>().formatCurrency(amount);
   }
 
   @override
   void dispose() {
-    _payController.dispose(); // 👈 Sasa iko safe 100%
+    _payController.dispose();
     super.dispose();
   }
 
@@ -30,9 +31,33 @@ class _PaymentDialogState extends State<PaymentDialog> {
   Widget build(BuildContext context) {
     final remaining = widget.debt.amount - widget.debt.paidAmount;
     final isLend = widget.debt.type == 'lend';
+    final accent = isLend ? Colors.green.shade700 : Colors.blue.shade700;
 
     return AlertDialog(
-      title: Text('${isLend ? 'Collect from' : 'Pay'} ${widget.debt.name}'),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      titlePadding: const EdgeInsets.fromLTRB(18, 18, 18, 10),
+      contentPadding: const EdgeInsets.fromLTRB(18, 0, 18, 10),
+      actionsPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+      title: Row(
+        children: [
+          CircleAvatar(
+            radius: 16,
+            backgroundColor: accent.withValues(alpha: 0.12),
+            child: Icon(
+              isLend ? Icons.south_west_rounded : Icons.north_east_rounded,
+              size: 16,
+              color: accent,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              '${isLend ? 'Collect from' : 'Pay'} ${widget.debt.name}',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+            ),
+          ),
+        ],
+      ),
       content: Form(
         key: _formKey,
         child: Column(
@@ -40,27 +65,35 @@ class _PaymentDialogState extends State<PaymentDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(8),
+                color: accent.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: accent.withValues(alpha: 0.15)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Remaining:', style: TextStyle(fontSize: 14)),
                   Text(
-                    '${formatCurrency(remaining)} TSh',
+                    'Remaining',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade700,
+                    ),
+                  ),
+                  Text(
+                    formatCurrency(remaining),
+                    style: TextStyle(
+                      fontSize: 15,
                       fontWeight: FontWeight.bold,
-                      color: Colors.red.shade700,
+                      color: accent,
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             TextFormField(
               controller: _payController,
               autofocus: true,
@@ -70,8 +103,8 @@ class _PaymentDialogState extends State<PaymentDialog> {
               ],
               decoration: InputDecoration(
                 labelText: 'Amount to ${isLend ? 'Collect' : 'Pay'}',
-                border: const OutlineInputBorder(),
-                prefixText: 'TSh ',
+                prefixText: context.read<AppSettingsProvider>().currencySymbol,
+                prefixIcon: Icon(Icons.payments_outlined, color: accent),
                 suffixIcon: TextButton(
                   onPressed: () {
                     _payController.text = remaining.toStringAsFixed(0);
@@ -93,7 +126,7 @@ class _PaymentDialogState extends State<PaymentDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context), // 👈 Tumia context ya dialog
+          onPressed: () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
         ElevatedButton(
@@ -102,14 +135,15 @@ class _PaymentDialogState extends State<PaymentDialog> {
             
             final payAmount = double.parse(_payController.text);
             
-            // Rudi na value badala ya kufanya kazi hapa
-            Navigator.pop(context, payAmount); // 👈 Rudisha amount
+            Navigator.pop(context, payAmount);
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: isLend ? Colors.green.shade600 : const Color.fromARGB(255, 6, 138, 13),
+            visualDensity: VisualDensity.compact,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            backgroundColor: accent,
           ),
           child: Text(
-            isLend ? 'Confirm Collect' : 'Confirm Pay',
+            'Confirm',
             style: const TextStyle(color: Colors.white),
           ),
         ),

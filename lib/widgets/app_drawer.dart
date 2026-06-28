@@ -1,14 +1,34 @@
 import 'package:flutter/material.dart';
 import '../screens/export_screen.dart';
 import '../screens/home_screen.dart';
-// import '../screens/settings_screen.dart'; // Kama unayo
+import '../screens/settings_screen.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
 
+  PageRouteBuilder<void> _buildPageRoute(Widget page) {
+    return PageRouteBuilder<void>(
+      pageBuilder: (context, animation, secondaryAnimation) => page,
+      transitionDuration: const Duration(milliseconds: 220),
+      reverseTransitionDuration: const Duration(milliseconds: 180),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        final slide = Tween<Offset>(
+          begin: const Offset(0.03, 0),
+          end: Offset.zero,
+        ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic));
+        final fade = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
+        return FadeTransition(
+          opacity: fade,
+          child: SlideTransition(position: slide, child: child),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
+      backgroundColor: const Color(0xFFF4F8FB),
       child: ListView(
         padding: const EdgeInsets.symmetric(vertical: 12),
         children: [
@@ -28,10 +48,16 @@ class AppDrawer extends StatelessWidget {
                   child: Icon(
                     Icons.account_balance_wallet,
                     size: 40,
-                    color: Colors.blue.shade700,
+                    color: const Color(0xFF0D6B8A),
                   ),
                 ),
-                decoration: BoxDecoration(color: Colors.blue.shade700),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF0D6B8A), Color(0xFF0A536B)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
               ),
             ),
           ),
@@ -48,7 +74,7 @@ class AppDrawer extends StatelessWidget {
                     if (ModalRoute.of(context)?.settings.name != '/home') {
                       Navigator.pushAndRemoveUntil(
                         context,
-                        MaterialPageRoute(builder: (_) => const HomeScreen()),
+                        _buildPageRoute(const HomeScreen()),
                         (route) => false,
                       );
                     }
@@ -66,9 +92,7 @@ class AppDrawer extends StatelessWidget {
                     Navigator.pop(context);
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => const ExportScreen(),
-                      ),
+                      _buildPageRoute(const ExportScreen()),
                     );
                   },
                 ),
@@ -79,11 +103,9 @@ class AppDrawer extends StatelessWidget {
                   title: 'Settings',
                   onTap: () {
                     Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Settings coming soon!'),
-                        duration: Duration(seconds: 2),
-                      ),
+                    Navigator.push(
+                      context,
+                      _buildPageRoute(const SettingsScreen()),
                     );
                   },
                 ),
@@ -132,9 +154,15 @@ class AppDrawer extends StatelessWidget {
     Color? iconColor,
   }) {
     return Card(
+      elevation: 1,
       child: ListTile(
-        leading: Icon(icon, color: iconColor ?? Colors.blueGrey.shade700),
-        title: Text(title),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+        leading: CircleAvatar(
+          radius: 18,
+          backgroundColor: (iconColor ?? const Color(0xFF0D6B8A)).withValues(alpha: 0.12),
+          child: Icon(icon, color: iconColor ?? const Color(0xFF0D6B8A)),
+        ),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
         subtitle: subtitle == null ? null : Text(subtitle),
         trailing: trailing,
         onTap: onTap,
