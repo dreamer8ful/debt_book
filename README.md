@@ -54,6 +54,18 @@ Active totals are calculated from the remaining balance:
 
 Settled transactions are kept in history but excluded from active outstanding totals.
 
+
+##bCREENSHOTS
+
+<img width="1080" height="2448" alt="Screenshot_20260630-212938" src="https://github.com/user-attachments/assets/2b1f8f46-a98a-4f10-b315-57e389a073c8" />
+<img width="1080" height="2448" alt="Screenshot_20260630-212943" src="https://github.com/user-attachments/assets/dbd7c3c3-c40d-4951-ab55-5e8129affda1" />
+<img width="1080" height="2448" alt="Screenshot_20260630-212948" src="https://github.com/user-attachments/assets/e9a13df4-c00b-4df1-9b64-a9c518d11c9b" />
+<img width="1080" height="2448" alt="Screenshot_20260630-212957" src="https://github.com/user-attachments/assets/4bccf606-0359-44a3-92fa-0d619eabc73a" />
+<img width="1080" height="2448" alt="Screenshot_20260630-213012" src="https://github.com/user-attachments/assets/154d9103-3f99-43b4-a68b-e50ad037bf66" />
+
+
+
+
 ## Project Structure
 
 ```text
