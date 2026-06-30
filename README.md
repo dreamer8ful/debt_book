@@ -55,7 +55,7 @@ Active totals are calculated from the remaining balance:
 Settled transactions are kept in history but excluded from active outstanding totals.
 
 
-##bCREENSHOTS
+## SCREENSHOTS
 
 <img width="1080" height="2448" alt="Screenshot_20260630-212938" src="https://github.com/user-attachments/assets/2b1f8f46-a98a-4f10-b315-57e389a073c8" />
 <img width="1080" height="2448" alt="Screenshot_20260630-212943" src="https://github.com/user-attachments/assets/dbd7c3c3-c40d-4951-ab55-5e8129affda1" />
