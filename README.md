@@ -4,6 +4,7 @@ Debt Book is a Flutter app for tracking money you have lent out and money you ha
 
 ## Project Info
 
+- This project was almost entirely developed by using AI as a side project
 - Developer: IntroSoft Media Solutions
 - Contact: msr08@live.com
 
@@ -52,6 +53,15 @@ Active totals are calculated from the remaining balance:
 - `remaining = amount - paidAmount`
 
 Settled transactions are kept in history but excluded from active outstanding totals.
+
+
+## SCREENSHOTS
+
+![App_screeshot](assets/Screenshot_20260630-212938.jpg "screeshot")
+![App_screeshot](assets/Screenshot_20260630-212943.jpg "screeshot")
+![App_screeshot](assets/Screenshot_20260630-212948.jpg "screeshot")
+![App_screeshot](assets/Screenshot_20260630-212957.jpg "screeshot")
+![App_screeshot](assets/Screenshot_20260630-213012.jpg "screeshot")
 
 ## Project Structure
 
