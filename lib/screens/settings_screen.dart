@@ -1096,7 +1096,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Map<String, String>? _findCurrencyOption(String code) {
     for (final option in _currencyOptions) {
       if (option['code'] == code) {
-        return option.map((key, value) => MapEntry(key, value as String));
+        return option.map((key, value) => MapEntry(key, value));
       }
     }
     return null;
@@ -1126,7 +1126,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       return _currencyOptions
           .map(
             (option) =>
-                option.map((key, value) => MapEntry(key, value as String)),
+                option.map((key, value) => MapEntry(key, value)),
           )
           .toList();
     }
@@ -1134,7 +1134,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return _currencyOptions
         .map(
           (option) =>
-              option.map((key, value) => MapEntry(key, value as String)),
+              option.map((key, value) => MapEntry(key, value)),
         )
         .where((option) {
           final haystack = [

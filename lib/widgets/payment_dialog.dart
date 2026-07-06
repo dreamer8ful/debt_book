@@ -140,8 +140,9 @@ class _PaymentDialogState extends State<PaymentDialog> {
                   if (value == null || value.isEmpty) return 'Enter amount';
                   final amount = double.tryParse(value);
                   if (amount == null || amount <= 0) return 'Invalid amount';
-                  if (amount > remaining)
+                  if (amount > remaining) {
                     return 'Exceeds ${formatCurrency(remaining)}';
+                  }
                   return null;
                 },
               ),
