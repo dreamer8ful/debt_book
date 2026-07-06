@@ -16,15 +16,29 @@ void main() {
 class DebtBookApp extends StatelessWidget {
   const DebtBookApp({super.key});
 
-  ThemeData _buildTheme() {
+  ThemeData _buildTheme(Brightness brightness) {
     final colorScheme = ColorScheme.fromSeed(
       seedColor: const Color(0xFF0D6B8A),
-      brightness: Brightness.light,
+      brightness: brightness,
       primary: const Color(0xFF0D6B8A),
-      secondary: const Color(0xFFF28C28),
-      tertiary: const Color(0xFF2E9E5B),
-      surface: const Color(0xFFFFFFFF),
+      secondary: brightness == Brightness.dark
+          ? const Color(0xFFF6A64A)
+          : const Color(0xFFF28C28),
+      tertiary: brightness == Brightness.dark
+          ? const Color(0xFF4CCF7A)
+          : const Color(0xFF2E9E5B),
     );
+
+    final isDark = brightness == Brightness.dark;
+    final scaffoldColor = isDark
+        ? const Color(0xFF0B1220)
+        : const Color(0xFFF8FAFC);
+    final cardColor = isDark ? const Color(0xFF111827) : Colors.white;
+    final inputFill = isDark ? const Color(0xFF1F2937) : Colors.white;
+    final borderColor = isDark
+        ? const Color(0xFF334155)
+        : const Color(0xFFE2E8F0);
+    final appBarForeground = isDark ? const Color(0xFFF8FAFC) : Colors.white;
 
     final textTheme = GoogleFonts.manropeTextTheme().copyWith(
       headlineSmall: GoogleFonts.manrope(
@@ -45,33 +59,33 @@ class DebtBookApp extends StatelessWidget {
       useMaterial3: true,
       colorScheme: colorScheme,
       textTheme: textTheme,
-      scaffoldBackgroundColor: const Color(0xFFF8FAFC),
+      scaffoldBackgroundColor: scaffoldColor,
       splashFactory: InkSparkle.splashFactory,
       appBarTheme: AppBarTheme(
         centerTitle: false,
         elevation: 0,
         scrolledUnderElevation: 0,
         backgroundColor: colorScheme.primary,
-        foregroundColor: Colors.white,
+        foregroundColor: appBarForeground,
         titleTextStyle: textTheme.titleLarge?.copyWith(
-          color: Colors.white,
+          color: appBarForeground,
           fontWeight: FontWeight.w800,
         ),
       ),
       cardTheme: CardThemeData(
         elevation: 1,
-        shadowColor: const Color(0x1A000000),
-        color: Colors.white,
+        shadowColor: isDark ? const Color(0x66000000) : const Color(0x1A000000),
+        color: cardColor,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: Color(0xFFE2E8F0), width: 1),
+          side: BorderSide(color: borderColor, width: 1),
         ),
         margin: EdgeInsets.zero,
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.white,
+        fillColor: inputFill,
         isDense: true,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 14,
@@ -79,18 +93,21 @@ class DebtBookApp extends StatelessWidget {
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+          borderSide: BorderSide(color: borderColor),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+          borderSide: BorderSide(color: borderColor),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: colorScheme.primary, width: 1.5),
         ),
         labelStyle: const TextStyle(fontSize: 14),
-        hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+        hintStyle: TextStyle(
+          color: isDark ? Colors.grey.shade500 : Colors.grey.shade400,
+          fontSize: 14,
+        ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -110,15 +127,15 @@ class DebtBookApp extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          side: const BorderSide(color: Color(0xFFE2E8F0)),
+          side: BorderSide(color: borderColor),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           textStyle: const TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
       chipTheme: ChipThemeData(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        side: const BorderSide(color: Color(0xFFE2E8F0)),
-        backgroundColor: Colors.white,
+        side: BorderSide(color: borderColor),
+        backgroundColor: cardColor,
         selectedColor: colorScheme.primaryContainer,
         labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -157,7 +174,9 @@ class DebtBookApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Debt Book',
         debugShowCheckedModeBanner: false,
-        theme: _buildTheme(),
+        theme: _buildTheme(Brightness.light),
+        darkTheme: _buildTheme(Brightness.dark),
+        themeMode: ThemeMode.system,
         builder: (context, child) {
           final appSettings = context.watch<AppSettingsProvider>();
           if (appSettings.isLocked) {

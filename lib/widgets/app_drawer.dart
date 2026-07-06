@@ -2,15 +2,18 @@ import 'package:flutter/material.dart';
 
 const String _appDeveloperName = 'IntroSoft Media Solutions';
 const String _appContactInfo = 'msr08@live.com';
-const String _appCopyrightNotice = '© 2026 IntroSoft Media Solutions. All rights reserved.';
+const String _appCopyrightNotice =
+    '© 2026 IntroSoft Media Solutions. All rights reserved.';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Drawer(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       child: Column(
         children: [
           Container(
@@ -30,7 +33,11 @@ class AppDrawer extends StatelessWidget {
                 const CircleAvatar(
                   radius: 30,
                   backgroundColor: Colors.white,
-                  child: Icon(Icons.account_balance_wallet, size: 30, color: Color(0xFF0D6B8A)),
+                  child: Icon(
+                    Icons.account_balance_wallet,
+                    size: 30,
+                    color: Color(0xFF0D6B8A),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 const Text(
@@ -62,7 +69,9 @@ class AppDrawer extends StatelessWidget {
                   icon: Icons.home_outlined,
                   activeIcon: Icons.home,
                   title: 'Home',
-                  isSelected: ModalRoute.of(context)?.settings.name == '/home' || ModalRoute.of(context)?.settings.name == '/',
+                  isSelected:
+                      ModalRoute.of(context)?.settings.name == '/home' ||
+                      ModalRoute.of(context)?.settings.name == '/',
                   onTap: () {
                     Navigator.pop(context);
                     if (ModalRoute.of(context)?.settings.name != '/home') {
@@ -85,7 +94,8 @@ class AppDrawer extends StatelessWidget {
                   icon: Icons.settings_outlined,
                   activeIcon: Icons.settings,
                   title: 'Settings',
-                  isSelected: ModalRoute.of(context)?.settings.name == '/settings',
+                  isSelected:
+                      ModalRoute.of(context)?.settings.name == '/settings',
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.pushNamed(context, '/settings');
@@ -140,7 +150,9 @@ class AppDrawer extends StatelessWidget {
     required VoidCallback onTap,
     bool isSelected = false,
   }) {
-    final color = isSelected ? const Color(0xFF0D6B8A) : Colors.blueGrey.shade700;
+    final color = isSelected
+        ? const Color(0xFF0D6B8A)
+        : Colors.blueGrey.shade700;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
@@ -148,7 +160,9 @@ class AppDrawer extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 4),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF0D6B8A).withValues(alpha: 0.1) : Colors.transparent,
+          color: isSelected
+              ? const Color(0xFF0D6B8A).withValues(alpha: 0.1)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(

@@ -24,7 +24,9 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _historyFuture = context.read<DebtProvider>().getDebtHistory(widget.debt.id!);
+    _historyFuture = context.read<DebtProvider>().getDebtHistory(
+      widget.debt.id!,
+    );
   }
 
   String _formatCurrency(double amount) {
@@ -57,12 +59,14 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final isBorrow = widget.debt.type == 'borrow';
     final mainColor = isBorrow ? Colors.green.shade600 : Colors.red.shade600;
     final remaining = widget.debt.amount - widget.debt.paidAmount;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Transaction Details'),
         backgroundColor: mainColor,
@@ -77,9 +81,9 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: theme.cardColor,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
+                border: Border.all(color: colorScheme.outlineVariant),
               ),
               child: Column(
                 children: [
@@ -119,31 +123,66 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                   ),
                   Row(
                     children: [
-                      _buildHeaderStat('Total', _formatCurrency(widget.debt.amount), Colors.blueGrey.shade600),
-                      Container(width: 1, height: 30, color: const Color(0xFFE2E8F0)),
-                      _buildHeaderStat('Paid', _formatCurrency(widget.debt.paidAmount), Colors.green.shade600),
-                      Container(width: 1, height: 30, color: const Color(0xFFE2E8F0)),
-                      _buildHeaderStat('Remaining', _formatCurrency(remaining), Colors.red.shade600),
+                      _buildHeaderStat(
+                        'Total',
+                        _formatCurrency(widget.debt.amount),
+                        Colors.blueGrey.shade600,
+                      ),
+                      Container(
+                        width: 1,
+                        height: 30,
+                        color: colorScheme.outlineVariant,
+                      ),
+                      _buildHeaderStat(
+                        'Paid',
+                        _formatCurrency(widget.debt.paidAmount),
+                        Colors.green.shade600,
+                      ),
+                      Container(
+                        width: 1,
+                        height: 30,
+                        color: colorScheme.outlineVariant,
+                      ),
+                      _buildHeaderStat(
+                        'Remaining',
+                        _formatCurrency(remaining),
+                        Colors.red.shade600,
+                      ),
                     ],
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 16),
-            
+
             // Details List
             _buildSectionHeader('Information'),
             Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: theme.cardColor,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
+                border: Border.all(color: colorScheme.outlineVariant),
               ),
               child: Column(
                 children: [
-                  _buildDetailTile(Icons.phone_outlined, 'Phone', widget.debt.phone ?? 'N/A'),
-                  _buildDetailTile(Icons.calendar_today_outlined, 'Started', _formatDate(widget.debt.dateBorrowed)),
-                  _buildDetailTile(Icons.event_note_outlined, 'Due Date', widget.debt.dueDate != null ? _formatDate(widget.debt.dueDate!) : 'N/A', isLast: true),
+                  _buildDetailTile(
+                    Icons.phone_outlined,
+                    'Phone',
+                    widget.debt.phone ?? 'N/A',
+                  ),
+                  _buildDetailTile(
+                    Icons.calendar_today_outlined,
+                    'Started',
+                    _formatDate(widget.debt.dateBorrowed),
+                  ),
+                  _buildDetailTile(
+                    Icons.event_note_outlined,
+                    'Due Date',
+                    widget.debt.dueDate != null
+                        ? _formatDate(widget.debt.dueDate!)
+                        : 'N/A',
+                    isLast: true,
+                  ),
                 ],
               ),
             ),
@@ -155,19 +194,23 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: theme.cardColor,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  border: Border.all(color: colorScheme.outlineVariant),
                 ),
                 child: Text(
                   widget.debt.description!,
-                  style: TextStyle(color: Colors.blueGrey.shade700, height: 1.5),
+                  style: TextStyle(
+                    color: Colors.blueGrey.shade700,
+                    height: 1.5,
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
             ],
 
-            if (widget.debt.photoPath != null && File(widget.debt.photoPath!).existsSync()) ...[
+            if (widget.debt.photoPath != null &&
+                File(widget.debt.photoPath!).existsSync()) ...[
               _buildSectionHeader('Attachment'),
               ClipRRect(
                 borderRadius: BorderRadius.circular(16),
@@ -185,23 +228,29 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
               future: _historyFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator()));
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(20),
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
                 }
                 final history = snapshot.data ?? [];
                 if (history.isEmpty) {
-                  return _buildEmptyState('No activity yet');
+                  return _buildEmptyState(context, 'No activity yet');
                 }
                 return Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: theme.cardColor,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    border: Border.all(color: colorScheme.outlineVariant),
                   ),
                   child: ListView.separated(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: history.length,
-                    separatorBuilder: (_, _) => const Divider(indent: 50, height: 1),
+                    separatorBuilder: (_, _) =>
+                        const Divider(indent: 50, height: 1),
                     itemBuilder: (context, index) {
                       final entry = history[index];
                       final color = _historyColor(entry);
@@ -211,7 +260,9 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                           radius: 14,
                           backgroundColor: color.withValues(alpha: 0.1),
                           child: Icon(
-                            entry.action == 'Payment' ? Icons.check : Icons.edit,
+                            entry.action == 'Payment'
+                                ? Icons.check
+                                : Icons.edit,
                             size: 14,
                             color: color,
                           ),
@@ -222,9 +273,13 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                         ),
                         subtitle: Text(
                           DateFormat('MMM dd, yyyy • hh:mm a').format(
-                            DateTime.tryParse(entry.createdAt) ?? DateTime.now(),
+                            DateTime.tryParse(entry.createdAt) ??
+                                DateTime.now(),
                           ),
-                          style: TextStyle(fontSize: 11, color: Colors.blueGrey.shade500),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.blueGrey.shade500,
+                          ),
                         ),
                       );
                     },
@@ -245,14 +300,22 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
         children: [
           Text(
             label,
-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.blueGrey.shade500),
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: Colors.blueGrey.shade500,
+            ),
           ),
           const SizedBox(height: 4),
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
               value,
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: valueColor),
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                color: valueColor,
+              ),
             ),
           ),
         ],
@@ -278,31 +341,54 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
     );
   }
 
-  Widget _buildDetailTile(IconData icon, String label, String value, {bool isLast = false}) {
+  Widget _buildDetailTile(
+    IconData icon,
+    String label,
+    String value, {
+    bool isLast = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
           Icon(icon, size: 20, color: Colors.blueGrey.shade400),
           const SizedBox(width: 12),
-          Text(label, style: TextStyle(color: Colors.blueGrey.shade600, fontWeight: FontWeight.w500)),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.blueGrey.shade600,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
           const Spacer(),
-          Text(value, style: TextStyle(fontWeight: FontWeight.w700, color: Colors.blueGrey.shade900)),
+          Text(
+            value,
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              color: Colors.blueGrey.shade900,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildEmptyState(String message) {
+  Widget _buildEmptyState(BuildContext context, String message) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Container(
       padding: const EdgeInsets.all(20),
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
-      child: Text(message, textAlign: TextAlign.center, style: TextStyle(color: Colors.blueGrey.shade400)),
+      child: Text(
+        message,
+        textAlign: TextAlign.center,
+        style: TextStyle(color: Colors.blueGrey.shade400),
+      ),
     );
   }
 }

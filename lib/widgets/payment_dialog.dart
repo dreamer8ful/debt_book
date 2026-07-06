@@ -6,7 +6,7 @@ import '../providers/app_settings_provider.dart';
 
 class PaymentDialog extends StatefulWidget {
   final DebtModel debt;
-  
+
   const PaymentDialog({super.key, required this.debt});
 
   @override
@@ -18,7 +18,7 @@ class _PaymentDialogState extends State<PaymentDialog> {
   final _payController = TextEditingController();
   final _noteController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
-  
+
   String formatCurrency(double amount) {
     return context.read<AppSettingsProvider>().formatCurrency(amount);
   }
@@ -44,12 +44,14 @@ class _PaymentDialogState extends State<PaymentDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final remaining = widget.debt.amount - widget.debt.paidAmount;
     final isLend = widget.debt.type == 'lend';
     final accent = isLend ? Colors.green.shade700 : Colors.blue.shade700;
     final settings = context.watch<AppSettingsProvider>();
 
     return AlertDialog(
+      backgroundColor: theme.colorScheme.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       titlePadding: const EdgeInsets.fromLTRB(18, 18, 18, 10),
       contentPadding: const EdgeInsets.fromLTRB(18, 0, 18, 10),
@@ -114,13 +116,17 @@ class _PaymentDialogState extends State<PaymentDialog> {
               TextFormField(
                 controller: _payController,
                 autofocus: true,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
                 ],
                 decoration: InputDecoration(
                   labelText: 'Amount to ${isLend ? 'Collect' : 'Pay'}',
-                  prefixText: context.read<AppSettingsProvider>().currencySymbol,
+                  prefixText: context
+                      .read<AppSettingsProvider>()
+                      .currencySymbol,
                   prefixIcon: Icon(Icons.payments_outlined, color: accent),
                   suffixIcon: TextButton(
                     onPressed: () {
@@ -134,7 +140,8 @@ class _PaymentDialogState extends State<PaymentDialog> {
                   if (value == null || value.isEmpty) return 'Enter amount';
                   final amount = double.tryParse(value);
                   if (amount == null || amount <= 0) return 'Invalid amount';
-                  if (amount > remaining) return 'Exceeds ${formatCurrency(remaining)}';
+                  if (amount > remaining)
+                    return 'Exceeds ${formatCurrency(remaining)}';
                   return null;
                 },
               ),
@@ -170,13 +177,15 @@ class _PaymentDialogState extends State<PaymentDialog> {
         ElevatedButton(
           onPressed: () async {
             if (!_formKey.currentState!.validate()) return;
-            
+
             final payAmount = double.parse(_payController.text);
-            
+
             Navigator.pop(context, {
               'amount': payAmount,
               'date': _selectedDate,
-              'note': _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
+              'note': _noteController.text.trim().isEmpty
+                  ? null
+                  : _noteController.text.trim(),
             });
           },
           style: ElevatedButton.styleFrom(
@@ -184,10 +193,7 @@ class _PaymentDialogState extends State<PaymentDialog> {
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             backgroundColor: accent,
           ),
-          child: Text(
-            'Confirm',
-            style: const TextStyle(color: Colors.white),
-          ),
+          child: Text('Confirm', style: const TextStyle(color: Colors.white)),
         ),
       ],
     );

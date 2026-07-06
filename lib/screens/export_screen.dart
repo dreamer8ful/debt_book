@@ -72,12 +72,14 @@ class _ExportScreenState extends State<ExportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Export Records'),
-        backgroundColor: const Color(0xFF0D6B8A),
-        foregroundColor: Colors.white,
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -96,9 +98,17 @@ class _ExportScreenState extends State<ExportScreen> {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      _buildToggleChip('Active', _active, (v) => setState(() => _active = v)),
+                      _buildToggleChip(
+                        'Active',
+                        _active,
+                        (v) => setState(() => _active = v),
+                      ),
                       const SizedBox(width: 8),
-                      _buildToggleChip('Settled', _settled, (v) => setState(() => _settled = v)),
+                      _buildToggleChip(
+                        'Settled',
+                        _settled,
+                        (v) => setState(() => _settled = v),
+                      ),
                     ],
                   ),
                   const Padding(
@@ -112,9 +122,17 @@ class _ExportScreenState extends State<ExportScreen> {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      _buildToggleChip('Lend', _lend, (v) => setState(() => _lend = v)),
+                      _buildToggleChip(
+                        'Lend',
+                        _lend,
+                        (v) => setState(() => _lend = v),
+                      ),
                       const SizedBox(width: 8),
-                      _buildToggleChip('Borrow', _borrow, (v) => setState(() => _borrow = v)),
+                      _buildToggleChip(
+                        'Borrow',
+                        _borrow,
+                        (v) => setState(() => _borrow = v),
+                      ),
                     ],
                   ),
                 ],
@@ -147,7 +165,7 @@ class _ExportScreenState extends State<ExportScreen> {
               ),
             ],
           ),
-          
+
           if (_isLoading) ...[
             const SizedBox(height: 32),
             const Center(child: CircularProgressIndicator()),
@@ -159,9 +177,9 @@ class _ExportScreenState extends State<ExportScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: theme.cardColor,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
+                border: Border.all(color: colorScheme.outlineVariant),
               ),
               child: Row(
                 children: [
@@ -171,10 +189,16 @@ class _ExportScreenState extends State<ExportScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Export Successful', style: TextStyle(fontWeight: FontWeight.w700)),
+                        const Text(
+                          'Export Successful',
+                          style: TextStyle(fontWeight: FontWeight.w700),
+                        ),
                         Text(
                           _lastPath!.split('\\').last,
-                          style: TextStyle(fontSize: 11, color: Colors.blueGrey.shade500),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.blueGrey.shade500,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -209,7 +233,11 @@ class _ExportScreenState extends State<ExportScreen> {
     );
   }
 
-  Widget _buildToggleChip(String label, bool isSelected, Function(bool) onToggle) {
+  Widget _buildToggleChip(
+    String label,
+    bool isSelected,
+    Function(bool) onToggle,
+  ) {
     return FilterChip(
       label: Text(label),
       selected: isSelected,
@@ -235,7 +263,11 @@ class _ExportScreenState extends State<ExportScreen> {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: const Color(0xFFE2E8F0)),
           boxShadow: const [
-            BoxShadow(color: Color(0x05000000), blurRadius: 10, offset: Offset(0, 4)),
+            BoxShadow(
+              color: Color(0x05000000),
+              blurRadius: 10,
+              offset: Offset(0, 4),
+            ),
           ],
         ),
         child: Column(

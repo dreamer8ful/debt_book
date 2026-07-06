@@ -43,6 +43,8 @@ class _AppLockScreenState extends State<AppLockScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -56,7 +58,7 @@ class _AppLockScreenState extends State<AppLockScreen> {
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
             child: Card(
-              color: Colors.white.withValues(alpha: 0.97),
+              color: theme.cardColor,
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Column(
@@ -64,22 +66,25 @@ class _AppLockScreenState extends State<AppLockScreen> {
                   children: [
                     CircleAvatar(
                       radius: 34,
-                      backgroundColor: Colors.red.shade50,
+                      backgroundColor: colorScheme.errorContainer,
                       child: Icon(
                         Icons.lock_outline,
                         size: 34,
-                        color: Colors.red.shade700,
+                        color: colorScheme.onErrorContainer,
                       ),
                     ),
                     const SizedBox(height: 16),
                     const Text(
                       'App Locked',
-                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Enter your password to continue',
-                      style: TextStyle(color: Colors.grey.shade700),
+                      style: TextStyle(color: colorScheme.onSurfaceVariant),
                     ),
                     const SizedBox(height: 20),
                     TextField(
@@ -101,7 +106,9 @@ class _AppLockScreenState extends State<AppLockScreen> {
                             ? const SizedBox(
                                 width: 20,
                                 height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               )
                             : const Text('Unlock'),
                       ),

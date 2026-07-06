@@ -8,6 +8,7 @@ import 'package:crypto/crypto.dart';
 class AppSettingsProvider extends ChangeNotifier {
   static const String _currencyCodeKey = 'currencyCode';
   static const String _currencySymbolKey = 'currencySymbol';
+  static const String _currencyCountryKey = 'currencyCountry';
   static const String _dateFormatKey = 'dateFormatPattern';
   static const String _passwordHashKey = 'passwordHash';
   static const String _lockEnabledKey = 'lockEnabled';
@@ -15,6 +16,7 @@ class AppSettingsProvider extends ChangeNotifier {
   SharedPreferences? _prefs;
   String _currencyCode = 'TZS';
   String _currencySymbol = 'TSh ';
+  String _currencyCountry = 'Tanzania';
   String _dateFormatPattern = 'dd-MM-yyyy';
   String _passwordHash = '';
   bool _lockEnabled = false;
@@ -24,6 +26,7 @@ class AppSettingsProvider extends ChangeNotifier {
   bool get initialized => _initialized;
   String get currencyCode => _currencyCode;
   String get currencySymbol => _currencySymbol;
+  String get currencyCountry => _currencyCountry;
   String get dateFormatPattern => _dateFormatPattern;
   bool get lockEnabled => _lockEnabled;
   bool get hasPassword => _passwordHash.isNotEmpty;
@@ -33,7 +36,10 @@ class AppSettingsProvider extends ChangeNotifier {
     _prefs ??= await SharedPreferences.getInstance();
     _currencyCode = _prefs!.getString(_currencyCodeKey) ?? _currencyCode;
     _currencySymbol = _prefs!.getString(_currencySymbolKey) ?? _currencySymbol;
-    _dateFormatPattern = _prefs!.getString(_dateFormatKey) ?? _dateFormatPattern;
+    _currencyCountry =
+        _prefs!.getString(_currencyCountryKey) ?? _currencyCountry;
+    _dateFormatPattern =
+        _prefs!.getString(_dateFormatKey) ?? _dateFormatPattern;
     _passwordHash = _prefs!.getString(_passwordHashKey) ?? '';
     _lockEnabled = _prefs!.getBool(_lockEnabledKey) ?? false;
     _isLocked = _lockEnabled && _passwordHash.isNotEmpty;
@@ -44,11 +50,14 @@ class AppSettingsProvider extends ChangeNotifier {
   Future<void> setCurrency({
     required String code,
     required String symbol,
+    required String country,
   }) async {
     _currencyCode = code;
     _currencySymbol = symbol;
+    _currencyCountry = country;
     await _prefs?.setString(_currencyCodeKey, code);
     await _prefs?.setString(_currencySymbolKey, symbol);
+    await _prefs?.setString(_currencyCountryKey, country);
     notifyListeners();
   }
 

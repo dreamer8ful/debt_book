@@ -14,6 +14,8 @@ class OverviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final provider = context.watch<DebtProvider>();
 
     final filteredList = isLend
@@ -38,7 +40,7 @@ class OverviewCard extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: const [
           BoxShadow(
@@ -50,7 +52,7 @@ class OverviewCard extends StatelessWidget {
         border: Border.all(
           color: isFiltering
               ? textColor.withValues(alpha: 0.5)
-              : const Color(0xFFE2E8F0),
+              : colorScheme.outlineVariant,
           width: isFiltering ? 1.5 : 1,
         ),
       ),
@@ -94,7 +96,11 @@ class OverviewCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                    Icon(Icons.chevron_right, size: 20, color: Colors.blueGrey.shade400),
+                    Icon(
+                      Icons.chevron_right,
+                      size: 20,
+                      color: Colors.blueGrey.shade400,
+                    ),
                   ],
                 ),
               ],
