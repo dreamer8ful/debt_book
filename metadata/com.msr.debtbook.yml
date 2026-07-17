@@ -1,0 +1,51 @@
+Categories:
+  - Money
+License: Unknown
+AuthorName: IntroSoft Media Solutions
+AuthorEmail: introsoft.media@gmail.com
+WebSite: https://gitlab.com/introsoft-group/debt_book
+SourceCode: https://gitlab.com/introsoft-group/debt_book
+IssueTracker: https://gitlab.com/introsoft-group/debt_book/-/issues
+
+Name: Debt Book
+Summary: Offline debt tracker for lent and borrowed money
+Description: |-
+  Debt Book helps track money you lent and money you borrowed, fully offline.
+
+  Core functionality includes:
+
+  * Separate LENT and BORROWED workflows
+  * Outstanding balance tracking with partial payments
+  * Add-more actions for existing transactions
+  * Search and sorting by date, amount, and person
+  * Transaction history with payment/activity entries
+  * Receipt/invoice image attachments
+  * Contact picker integration
+  * Excel and PDF export
+  * Local backup and restore
+  * Configurable currency/date format and app lock
+
+  The app stores all records locally using SQLite and does not require a backend.
+
+RepoType: git
+Repo: https://gitlab.com/introsoft-group/debt_book.git
+
+Builds:
+  - versionName: 1.0.0
+    versionCode: 4
+    commit: HEAD
+    subdir: .
+    sudo:
+      - apt-get update
+      - apt-get install -y curl git unzip xz-utils zip libglu1-mesa
+    init:
+      - flutter config --no-analytics
+      - flutter pub get
+    build:
+      - flutter build apk --release
+    output: build/app/outputs/flutter-apk/app-release.apk
+
+AllowedAPKSigningKeys: []
+
+CurrentVersion: 1.0.0
+CurrentVersionCode: 4
