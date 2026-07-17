@@ -1,11 +1,12 @@
 Categories:
   - Money
-License: Unknown
+License: MIT
 AuthorName: IntroSoft Media Solutions
 AuthorEmail: introsoft.media@gmail.com
 WebSite: https://gitlab.com/introsoft-group/debt_book
 SourceCode: https://gitlab.com/introsoft-group/debt_book
 IssueTracker: https://gitlab.com/introsoft-group/debt_book/-/issues
+Changelog: https://gitlab.com/introsoft-group/debt_book/-/raw/main/CHANGELOG.md
 
 Name: Debt Book
 Summary: Offline debt tracker for lent and borrowed money
@@ -27,13 +28,25 @@ Description: |-
 
   The app stores all records locally using SQLite and does not require a backend.
 
+  Permission usage:
+
+  * Contacts access is used only for optional contact selection while creating or editing a debt entry.
+  * Camera and media access are used only for optional receipt/invoice image attachments.
+  * File and storage access are used only for user-initiated backup, restore, and export actions.
+
+MaintainerNotes: |-
+  No ads, analytics, or external tracking SDKs are included.
+
+  Storage, contacts, and camera/media permissions are used only for user-requested features
+  (backup/restore/export, contact picker, and receipt image attachments).
+
 RepoType: git
 Repo: https://gitlab.com/introsoft-group/debt_book.git
 
 Builds:
   - versionName: 1.0.0
-    versionCode: 4
-    commit: HEAD
+    versionCode: 3
+    commit: a73aa6d8fc6ccb2a8766f9e6835f0c7b9efa7830
     subdir: .
     sudo:
       - apt-get update
@@ -45,7 +58,22 @@ Builds:
       - flutter build apk --release
     output: build/app/outputs/flutter-apk/app-release.apk
 
-AllowedAPKSigningKeys: []
+  - versionName: 1.0.0
+    versionCode: 4
+    commit: 42e43d5a643ab40d957df6e4fb745b829dec555b
+    subdir: .
+    sudo:
+      - apt-get update
+      - apt-get install -y curl git unzip xz-utils zip libglu1-mesa
+    init:
+      - flutter config --no-analytics
+      - flutter pub get
+    build:
+      - flutter build apk --release
+    output: build/app/outputs/flutter-apk/app-release.apk
+
+UpdateCheckMode: Tags
+AutoUpdateMode: None
 
 CurrentVersion: 1.0.0
 CurrentVersionCode: 4

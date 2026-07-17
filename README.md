@@ -5,7 +5,7 @@ Debt Book is a Flutter app for tracking money you have lent out and money you ha
 ## Project Info
 
 - Developer: IntroSoft Media Solutions
-- Contact: msr08@live.com
+- Contact: `introsoft.media@gmail.com`
 
 ## Features
 
@@ -165,4 +165,8 @@ Depending on platform and feature usage, the app may request access to:
 
 ## License
 
-No license file is currently included in this repository. Add one if you plan to distribute the project.
+This project is licensed under the MIT License. See [LICENSE](LICENSE).
+
+## Changelog
+
+Release history is documented in [CHANGELOG.md](CHANGELOG.md).
