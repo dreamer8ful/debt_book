@@ -3,10 +3,10 @@ Categories:
 License: MIT
 AuthorName: IntroSoft Media Solutions
 AuthorEmail: introsoft.media@gmail.com
-WebSite: https://gitlab.com/introsoft-group/debt_book
-SourceCode: https://gitlab.com/introsoft-group/debt_book
-IssueTracker: https://gitlab.com/introsoft-group/debt_book/-/issues
-Changelog: https://gitlab.com/introsoft-group/debt_book/-/raw/main/CHANGELOG.md
+WebSite: https://github.com/dreamer8ful/debt_book
+SourceCode: https://github.com/dreamer8ful/debt_book
+IssueTracker: https://github.com/dreamer8ful/debt_book/issues
+Changelog: https://github.com/dreamer8ful/debt_book/raw/main/CHANGELOG.md
 
 Name: Debt Book
 Summary: Offline debt tracker for lent and borrowed money
@@ -41,7 +41,7 @@ MaintainerNotes: |-
   (backup/restore/export, contact picker, and receipt image attachments).
 
 RepoType: git
-Repo: https://gitlab.com/introsoft-group/debt_book.git
+Repo: https://github.com/dreamer8ful/debt_book.git
 
 Builds:
   - versionName: 1.0.0
