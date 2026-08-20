@@ -10,6 +10,8 @@ import 'package:provider/provider.dart';
 import '../models/debt_model1.dart';
 import '../providers/app_settings_provider.dart';
 import '../providers/debt_provider.dart';
+import '../widgets/glass_container.dart';
+import '../widgets/background_blobs.dart';
 
 class AddTransactionScreen extends StatefulWidget {
   final String type; // 'lend' au 'borrow'
@@ -228,6 +230,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     final mainColor = isLend ? Colors.red.shade600 : Colors.green.shade600;
     final title = isLend ? 'Add Lend' : 'Add Borrow';
     final settings = context.watch<AppSettingsProvider>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
@@ -244,21 +247,26 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           ),
         ),
       ),
-      body: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _sectionHeader(
-                icon: Icons.person_outline,
-                title: 'Contact Information',
-                subtitle: 'Select or enter the person involved',
-              ),
-              const SizedBox(height: 12),
-              Card(
-                child: Padding(
+      body: BackgroundBlobs(
+        blobs: [
+          BlobConfig(top: 50, right: -40, size: 200, color: mainColor.withValues(alpha: 0.1)),
+          BlobConfig(bottom: 100, left: -30, size: 150, color: Colors.blue.withValues(alpha: 0.06)),
+        ],
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _sectionHeader(
+                  icon: Icons.person_outline,
+                  title: 'Contact Information',
+                  subtitle: 'Select or enter the person involved',
+                ),
+                const SizedBox(height: 12),
+                GlassContainer(
+                  opacity: isDark ? 0.3 : 0.6,
                   padding: const EdgeInsets.all(12),
                   child: Column(
                     children: [
@@ -294,16 +302,15 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              _sectionHeader(
-                icon: Icons.receipt_long_outlined,
-                title: 'Transaction Details',
-                subtitle: 'Set amount and dates',
-              ),
-              const SizedBox(height: 12),
-              Card(
-                child: Padding(
+                const SizedBox(height: 20),
+                _sectionHeader(
+                  icon: Icons.receipt_long_outlined,
+                  title: 'Transaction Details',
+                  subtitle: 'Set amount and dates',
+                ),
+                const SizedBox(height: 12),
+                GlassContainer(
+                  opacity: isDark ? 0.3 : 0.6,
                   padding: const EdgeInsets.all(12),
                   child: Column(
                     children: [
@@ -366,7 +373,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                           child: Text(
                             _buildTotalPreview(settings.currencySymbol),
                             style: TextStyle(
-                              color: Colors.blueGrey.shade600,
+                              color: isDark ? Colors.white70 : Colors.blueGrey.shade600,
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                             ),
@@ -414,35 +421,35 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              _sectionHeader(
-                icon: Icons.attach_file,
-                title: 'Attachments',
-                subtitle: 'Invoice or receipt photo',
-              ),
-              const SizedBox(height: 12),
-              OutlinedButton.icon(
-                onPressed: _showPhotoOptions,
-                icon: const Icon(Icons.add_a_photo_outlined, size: 18),
-                label: Text(_photoPath == null ? 'Add Receipt' : 'Change Receipt'),
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 44),
+                const SizedBox(height: 20),
+                _sectionHeader(
+                  icon: Icons.attach_file,
+                  title: 'Attachments',
+                  subtitle: 'Invoice or receipt photo',
                 ),
-              ),
-              if (_photoPath != null) ...[
                 const SizedBox(height: 12),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.file(
-                    File(_photoPath!),
-                    height: 150,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
+                OutlinedButton.icon(
+                  onPressed: _showPhotoOptions,
+                  icon: const Icon(Icons.add_a_photo_outlined, size: 18),
+                  label: Text(_photoPath == null ? 'Add Receipt' : 'Change Receipt'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 44),
                   ),
                 ),
+                if (_photoPath != null) ...[
+                  const SizedBox(height: 12),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.file(
+                      File(_photoPath!),
+                      height: 150,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),

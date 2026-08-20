@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:ui';
 import '../providers/debt_provider.dart';
 import '../services/export_service.dart';
 import '../models/debt_model1.dart';
+import '../widgets/glass_container.dart';
 
 class ExportScreen extends StatefulWidget {
   const ExportScreen({super.key});
@@ -74,6 +76,8 @@ class _ExportScreenState extends State<ExportScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
@@ -81,139 +85,167 @@ class _ExportScreenState extends State<ExportScreen> {
         backgroundColor: colorScheme.primary,
         foregroundColor: colorScheme.onPrimary,
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+      body: Stack(
         children: [
-          _buildSectionHeader('Report Configuration'),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Select Status',
-                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      _buildToggleChip(
-                        'Active',
-                        _active,
-                        (v) => setState(() => _active = v),
-                      ),
-                      const SizedBox(width: 8),
-                      _buildToggleChip(
-                        'Settled',
-                        _settled,
-                        (v) => setState(() => _settled = v),
-                      ),
-                    ],
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    child: Divider(),
-                  ),
-                  const Text(
-                    'Select Type',
-                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      _buildToggleChip(
-                        'Lend',
-                        _lend,
-                        (v) => setState(() => _lend = v),
-                      ),
-                      const SizedBox(width: 8),
-                      _buildToggleChip(
-                        'Borrow',
-                        _borrow,
-                        (v) => setState(() => _borrow = v),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+          // Background Blobs
+          Positioned(
+            top: 100,
+            left: -40,
+            child: _buildBlob(160, Colors.green.withValues(alpha: 0.08)),
           ),
-          const SizedBox(height: 24),
-
-          _buildSectionHeader('Export Format'),
-          Row(
+          Positioned(
+            bottom: 120,
+            right: -30,
+            child: _buildBlob(140, Colors.red.withValues(alpha: 0.08)),
+          ),
+          
+          ListView(
+            padding: const EdgeInsets.all(16),
             children: [
-              Expanded(
-                child: _buildExportCard(
-                  title: 'Excel Sheet',
-                  subtitle: '.xlsx format',
-                  icon: Icons.table_chart_outlined,
-                  color: const Color(0xFF2E9E5B),
-                  onTap: _isLoading ? null : _exportExcel,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildExportCard(
-                  title: 'PDF Document',
-                  subtitle: '.pdf format',
-                  icon: Icons.picture_as_pdf_outlined,
-                  color: const Color(0xFFB23A48),
-                  onTap: _isLoading ? null : _exportPdf,
-                ),
-              ),
-            ],
-          ),
-
-          if (_isLoading) ...[
-            const SizedBox(height: 32),
-            const Center(child: CircularProgressIndicator()),
-          ],
-
-          if (_lastPath != null) ...[
-            const SizedBox(height: 32),
-            _buildSectionHeader('Recent Export'),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: theme.cardColor,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: colorScheme.outlineVariant),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.file_present, color: Colors.blueGrey),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              _buildSectionHeader('Report Configuration'),
+              GlassContainer(
+                opacity: isDark ? 0.3 : 0.6,
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Select Status',
+                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
                       children: [
-                        const Text(
-                          'Export Successful',
-                          style: TextStyle(fontWeight: FontWeight.w700),
+                        _buildToggleChip(
+                          'Active',
+                          _active,
+                          (v) => setState(() => _active = v),
                         ),
-                        Text(
-                          _lastPath!.split('\\').last,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.blueGrey.shade500,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        const SizedBox(width: 8),
+                        _buildToggleChip(
+                          'Settled',
+                          _settled,
+                          (v) => setState(() => _settled = v),
                         ),
                       ],
                     ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      child: Divider(),
+                    ),
+                    const Text(
+                      'Select Type',
+                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        _buildToggleChip(
+                          'Lend',
+                          _lend,
+                          (v) => setState(() => _lend = v),
+                        ),
+                        const SizedBox(width: 8),
+                        _buildToggleChip(
+                          'Borrow',
+                          _borrow,
+                          (v) => setState(() => _borrow = v),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              _buildSectionHeader('Export Format'),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildExportCard(
+                      title: 'Excel Sheet',
+                      subtitle: '.xlsx format',
+                      icon: Icons.table_chart_outlined,
+                      color: const Color(0xFF2E9E5B),
+                      onTap: _isLoading ? null : _exportExcel,
+                      isDark: isDark,
+                    ),
                   ),
-                  TextButton(
-                    onPressed: () => _exportService.openFile(_lastPath!),
-                    child: const Text('Open'),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildExportCard(
+                      title: 'PDF Document',
+                      subtitle: '.pdf format',
+                      icon: Icons.picture_as_pdf_outlined,
+                      color: const Color(0xFFB23A48),
+                      onTap: _isLoading ? null : _exportPdf,
+                      isDark: isDark,
+                    ),
                   ),
                 ],
               ),
-            ),
-          ],
+
+              if (_isLoading) ...[
+                const SizedBox(height: 32),
+                const Center(child: CircularProgressIndicator()),
+              ],
+
+              if (_lastPath != null) ...[
+                const SizedBox(height: 32),
+                _buildSectionHeader('Recent Export'),
+                GlassContainer(
+                  opacity: isDark ? 0.3 : 0.6,
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.file_present, color: Colors.blueGrey),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Export Successful',
+                              style: TextStyle(fontWeight: FontWeight.w700),
+                            ),
+                            Text(
+                              _lastPath!.split('\\').last,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.blueGrey.shade500,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => _exportService.openFile(_lastPath!),
+                        child: const Text('Open'),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildBlob(double size, Color color) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+      ),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 50, sigmaY: 50),
+        child: Container(color: Colors.transparent),
       ),
     );
   }
@@ -252,42 +284,35 @@ class _ExportScreenState extends State<ExportScreen> {
     required IconData icon,
     required Color color,
     required VoidCallback? onTap,
+    required bool isDark,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x05000000),
-              blurRadius: 10,
-              offset: Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            CircleAvatar(
-              backgroundColor: color.withValues(alpha: 0.1),
-              child: Icon(icon, color: color),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
-              textAlign: TextAlign.center,
-            ),
-            Text(
-              subtitle,
-              style: TextStyle(fontSize: 11, color: Colors.blueGrey.shade500),
-              textAlign: TextAlign.center,
-            ),
-          ],
+    return GlassContainer(
+      opacity: isDark ? 0.3 : 0.6,
+      padding: EdgeInsets.zero,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              CircleAvatar(
+                backgroundColor: color.withValues(alpha: 0.1),
+                child: Icon(icon, color: color),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                title,
+                style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+                textAlign: TextAlign.center,
+              ),
+              Text(
+                subtitle,
+                style: TextStyle(fontSize: 11, color: isDark ? Colors.white70 : Colors.blueGrey.shade500),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );

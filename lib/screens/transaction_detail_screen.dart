@@ -3,10 +3,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+// import 'dart:ui';
 import '../providers/app_settings_provider.dart';
 import '../models/debt_history_entry.dart';
 import '../models/debt_model1.dart';
 import '../providers/debt_provider.dart';
+import '../widgets/glass_container.dart';
+import '../widgets/background_blobs.dart';
 
 class TransactionDetailScreen extends StatefulWidget {
   final DebtModel debt;
@@ -60,10 +63,10 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
     final isBorrow = widget.debt.type == 'borrow';
     final mainColor = isBorrow ? Colors.green.shade600 : Colors.red.shade600;
     final remaining = widget.debt.amount - widget.debt.paidAmount;
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -73,222 +76,219 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
         foregroundColor: Colors.white,
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // Profile Header Card
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: theme.cardColor,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: colorScheme.outlineVariant),
-              ),
-              child: Column(
-                children: [
-                  CircleAvatar(
-                    radius: 35,
-                    backgroundColor: mainColor.withValues(alpha: 0.1),
-                    child: Text(
-                      widget.debt.name.substring(0, 1).toUpperCase(),
-                      style: TextStyle(
-                        fontSize: 28,
+      body: BackgroundBlobs(
+        blobs: [
+          BlobConfig(top: 100, right: -50, size: 180, color: mainColor.withValues(alpha: 0.1)),
+          BlobConfig(bottom: 100, left: -40, size: 160, color: Colors.blue.withValues(alpha: 0.08)),
+        ],
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              // Profile Header Card
+              GlassContainer(
+                opacity: isDark ? 0.3 : 0.6,
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    CircleAvatar(
+                      radius: 35,
+                      backgroundColor: mainColor.withValues(alpha: 0.1),
+                      child: Text(
+                        widget.debt.name.substring(0, 1).toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800,
+                          color: mainColor,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      widget.debt.name,
+                      style: const TextStyle(
+                        fontSize: 22,
                         fontWeight: FontWeight.w800,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    Text(
+                      isBorrow ? 'CREDITOR' : 'DEBTOR',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w900,
                         color: mainColor,
+                        letterSpacing: 1.2,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    widget.debt.name,
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.5,
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 20),
+                      child: Divider(),
                     ),
-                  ),
-                  Text(
-                    isBorrow ? 'CREDITOR' : 'DEBTOR',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w900,
-                      color: mainColor,
-                      letterSpacing: 1.2,
+                    Row(
+                      children: [
+                        _buildHeaderStat(
+                          'Total',
+                          _formatCurrency(widget.debt.amount),
+                          isDark ? Colors.blueGrey.shade200 : Colors.blueGrey.shade600,
+                        ),
+                        Container(
+                          width: 1,
+                          height: 30,
+                          color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.1),
+                        ),
+                        _buildHeaderStat(
+                          'Paid',
+                          _formatCurrency(widget.debt.paidAmount),
+                          Colors.green.shade400,
+                        ),
+                        Container(
+                          width: 1,
+                          height: 30,
+                          color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.1),
+                        ),
+                        _buildHeaderStat(
+                          'Remaining',
+                          _formatCurrency(remaining),
+                          Colors.red.shade400,
+                        ),
+                      ],
                     ),
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 20),
-                    child: Divider(),
-                  ),
-                  Row(
-                    children: [
-                      _buildHeaderStat(
-                        'Total',
-                        _formatCurrency(widget.debt.amount),
-                        Colors.blueGrey.shade600,
-                      ),
-                      Container(
-                        width: 1,
-                        height: 30,
-                        color: colorScheme.outlineVariant,
-                      ),
-                      _buildHeaderStat(
-                        'Paid',
-                        _formatCurrency(widget.debt.paidAmount),
-                        Colors.green.shade600,
-                      ),
-                      Container(
-                        width: 1,
-                        height: 30,
-                        color: colorScheme.outlineVariant,
-                      ),
-                      _buildHeaderStat(
-                        'Remaining',
-                        _formatCurrency(remaining),
-                        Colors.red.shade600,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Details List
-            _buildSectionHeader('Information'),
-            Container(
-              decoration: BoxDecoration(
-                color: theme.cardColor,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: colorScheme.outlineVariant),
-              ),
-              child: Column(
-                children: [
-                  _buildDetailTile(
-                    Icons.phone_outlined,
-                    'Phone',
-                    widget.debt.phone ?? 'N/A',
-                  ),
-                  _buildDetailTile(
-                    Icons.calendar_today_outlined,
-                    'Started',
-                    _formatDate(widget.debt.dateBorrowed),
-                  ),
-                  _buildDetailTile(
-                    Icons.event_note_outlined,
-                    'Due Date',
-                    widget.debt.dueDate != null
-                        ? _formatDate(widget.debt.dueDate!)
-                        : 'N/A',
-                    isLast: true,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            if (widget.debt.description?.isNotEmpty == true) ...[
-              _buildSectionHeader('Notes'),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: theme.cardColor,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: colorScheme.outlineVariant),
-                ),
-                child: Text(
-                  widget.debt.description!,
-                  style: TextStyle(
-                    color: Colors.blueGrey.shade700,
-                    height: 1.5,
-                  ),
+                  ],
                 ),
               ),
               const SizedBox(height: 16),
-            ],
 
-            if (widget.debt.photoPath != null &&
-                File(widget.debt.photoPath!).existsSync()) ...[
-              _buildSectionHeader('Attachment'),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Image.file(
-                  File(widget.debt.photoPath!),
+              // Details List
+              _buildSectionHeader('Information'),
+              GlassContainer(
+                opacity: isDark ? 0.3 : 0.6,
+                padding: EdgeInsets.zero,
+                child: Column(
+                  children: [
+                    _buildDetailTile(
+                      Icons.phone_outlined,
+                      'Phone',
+                      widget.debt.phone ?? 'N/A',
+                      isDark,
+                    ),
+                    _buildDetailTile(
+                      Icons.calendar_today_outlined,
+                      'Started',
+                      _formatDate(widget.debt.dateBorrowed),
+                      isDark,
+                    ),
+                    _buildDetailTile(
+                      Icons.event_note_outlined,
+                      'Due Date',
+                      widget.debt.dueDate != null
+                          ? _formatDate(widget.debt.dueDate!)
+                          : 'N/A',
+                      isDark,
+                      isLast: true,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              if (widget.debt.description?.isNotEmpty == true) ...[
+                _buildSectionHeader('Notes'),
+                SizedBox(
                   width: double.infinity,
-                  fit: BoxFit.cover,
+                  child: GlassContainer(
+                    opacity: isDark ? 0.3 : 0.6,
+                    padding: const EdgeInsets.all(16),
+                    child: Text(
+                      widget.debt.description!,
+                      style: TextStyle(
+                        color: isDark ? Colors.white70 : Colors.blueGrey.shade700,
+                        height: 1.5,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-            ],
+                const SizedBox(height: 16),
+              ],
 
-            _buildSectionHeader('Activity History'),
-            FutureBuilder<List<DebtHistoryEntry>>(
-              future: _historyFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(20),
-                      child: CircularProgressIndicator(),
+              if (widget.debt.photoPath != null &&
+                  File(widget.debt.photoPath!).existsSync()) ...[
+                _buildSectionHeader('Attachment'),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Image.file(
+                    File(widget.debt.photoPath!),
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+
+              _buildSectionHeader('Activity History'),
+              FutureBuilder<List<DebtHistoryEntry>>(
+                future: _historyFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(20),
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
+                  }
+                  final history = snapshot.data ?? [];
+                  if (history.isEmpty) {
+                    return _buildEmptyState(context, 'No activity yet', isDark);
+                  }
+                  return GlassContainer(
+                    opacity: isDark ? 0.3 : 0.6,
+                    padding: EdgeInsets.zero,
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: history.length,
+                      separatorBuilder: (_, _) =>
+                          const Divider(indent: 50, height: 1),
+                      itemBuilder: (context, index) {
+                        final entry = history[index];
+                        final color = _historyColor(entry);
+                        return ListTile(
+                          dense: true,
+                          leading: CircleAvatar(
+                            radius: 14,
+                            backgroundColor: color.withValues(alpha: 0.1),
+                            child: Icon(
+                              entry.action == 'Payment'
+                                  ? Icons.check
+                                  : Icons.edit,
+                              size: 14,
+                              color: color,
+                            ),
+                          ),
+                          title: Text(
+                            _historyLabel(entry),
+                            style: const TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                          subtitle: Text(
+                            DateFormat('MMM dd, yyyy • hh:mm a').format(
+                              DateTime.tryParse(entry.createdAt) ??
+                                  DateTime.now(),
+                            ),
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: isDark ? Colors.white60 : Colors.blueGrey.shade500,
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   );
-                }
-                final history = snapshot.data ?? [];
-                if (history.isEmpty) {
-                  return _buildEmptyState(context, 'No activity yet');
-                }
-                return Container(
-                  decoration: BoxDecoration(
-                    color: theme.cardColor,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: colorScheme.outlineVariant),
-                  ),
-                  child: ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: history.length,
-                    separatorBuilder: (_, _) =>
-                        const Divider(indent: 50, height: 1),
-                    itemBuilder: (context, index) {
-                      final entry = history[index];
-                      final color = _historyColor(entry);
-                      return ListTile(
-                        dense: true,
-                        leading: CircleAvatar(
-                          radius: 14,
-                          backgroundColor: color.withValues(alpha: 0.1),
-                          child: Icon(
-                            entry.action == 'Payment'
-                                ? Icons.check
-                                : Icons.edit,
-                            size: 14,
-                            color: color,
-                          ),
-                        ),
-                        title: Text(
-                          _historyLabel(entry),
-                          style: const TextStyle(fontWeight: FontWeight.w700),
-                        ),
-                        subtitle: Text(
-                          DateFormat('MMM dd, yyyy • hh:mm a').format(
-                            DateTime.tryParse(entry.createdAt) ??
-                                DateTime.now(),
-                          ),
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.blueGrey.shade500,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 40),
-          ],
+                },
+              ),
+              const SizedBox(height: 40),
+            ],
+          ),
         ),
       ),
     );
@@ -344,19 +344,20 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
   Widget _buildDetailTile(
     IconData icon,
     String label,
-    String value, {
+    String value,
+    bool isDark, {
     bool isLast = false,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: Colors.blueGrey.shade400),
+          Icon(icon, size: 20, color: isDark ? Colors.white70 : Colors.blueGrey.shade400),
           const SizedBox(width: 12),
           Text(
             label,
             style: TextStyle(
-              color: Colors.blueGrey.shade600,
+              color: isDark ? Colors.white60 : Colors.blueGrey.shade600,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -365,7 +366,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
             value,
             style: TextStyle(
               fontWeight: FontWeight.w700,
-              color: Colors.blueGrey.shade900,
+              color: isDark ? Colors.white : Colors.blueGrey.shade900,
             ),
           ),
         ],
@@ -373,21 +374,14 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
     );
   }
 
-  Widget _buildEmptyState(BuildContext context, String message) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    return Container(
+  Widget _buildEmptyState(BuildContext context, String message, bool isDark) {
+    return GlassContainer(
+      opacity: isDark ? 0.3 : 0.6,
       padding: const EdgeInsets.all(20),
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: theme.cardColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outlineVariant),
-      ),
       child: Text(
         message,
         textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.blueGrey.shade400),
+        style: TextStyle(color: isDark ? Colors.white60 : Colors.blueGrey.shade400),
       ),
     );
   }

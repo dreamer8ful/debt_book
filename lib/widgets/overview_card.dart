@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_settings_provider.dart';
 import '../providers/debt_provider.dart';
+import 'glass_container.dart';
 
 class OverviewCard extends StatelessWidget {
   final bool isLend;
@@ -15,7 +16,7 @@ class OverviewCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
     final provider = context.watch<DebtProvider>();
 
     final filteredList = isLend
@@ -36,25 +37,15 @@ class OverviewCard extends StatelessWidget {
         provider.searchQuery.isNotEmpty || provider.filterStatus != 'All';
     final textColor = isLend ? Colors.red.shade700 : Colors.green.shade700;
 
-    return Container(
+    return GlassContainer(
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: theme.cardColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A000000),
-            blurRadius: 8,
-            offset: Offset(0, 4),
-          ),
-        ],
-        border: Border.all(
-          color: isFiltering
-              ? textColor.withValues(alpha: 0.5)
-              : colorScheme.outlineVariant,
-          width: isFiltering ? 1.5 : 1,
-        ),
+      opacity: isDark ? 0.3 : 0.6,
+      border: Border.all(
+        color: isFiltering
+            ? textColor.withValues(alpha: 0.5)
+            : (isDark ? Colors.white : Colors.black).withValues(alpha: 0.1),
+        width: isFiltering ? 1.5 : 1,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,7 +60,7 @@ class OverviewCard extends StatelessWidget {
                   'Overview',
                   style: TextStyle(
                     fontSize: 16,
-                    color: Colors.blueGrey.shade900,
+                    color: isDark ? Colors.white : Colors.blueGrey.shade900,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -99,7 +90,7 @@ class OverviewCard extends StatelessWidget {
                     Icon(
                       Icons.chevron_right,
                       size: 20,
-                      color: Colors.blueGrey.shade400,
+                      color: isDark ? Colors.white70 : Colors.blueGrey.shade400,
                     ),
                   ],
                 ),
@@ -114,13 +105,13 @@ class OverviewCard extends StatelessWidget {
                   context,
                   label: isLend ? 'Total Lend' : 'Total Borrow',
                   amount: totalAmount,
-                  color: Colors.red.shade600,
+                  color: isLend ? Colors.red.shade400 : Colors.green.shade400,
                 ),
               ),
               Container(
                 width: 1,
                 height: 30,
-                color: const Color(0xFFE2E8F0),
+                color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.1),
                 margin: const EdgeInsets.symmetric(horizontal: 12),
               ),
               Expanded(
@@ -128,7 +119,7 @@ class OverviewCard extends StatelessWidget {
                   context,
                   label: isLend ? 'Collected' : 'Paid',
                   amount: paidAmount,
-                  color: Colors.green.shade600,
+                  color: Colors.green.shade400,
                 ),
               ),
             ],
@@ -144,7 +135,7 @@ class OverviewCard extends StatelessWidget {
                 'Remaining Balance',
                 style: TextStyle(
                   fontSize: 13,
-                  color: Colors.blueGrey.shade600,
+                  color: isDark ? Colors.white70 : Colors.blueGrey.shade600,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -153,7 +144,7 @@ class OverviewCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w800,
-                  color: Colors.amber.shade800,
+                  color: Colors.amber.shade600,
                 ),
               ),
             ],

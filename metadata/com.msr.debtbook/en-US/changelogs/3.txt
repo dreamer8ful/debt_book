@@ -1,0 +1,4 @@
+- Initial public release of Debt Book.
+- Added offline debt tracking for lent and borrowed records.
+- Added partial payments, transaction history, and settlement handling.
+- Added export, backup/restore, and optional contact/image integrations.

@@ -1,4 +1,4 @@
-package com.msr.debtbook
+package com.introsoft.debtbook
 
 import io.flutter.embedding.android.FlutterActivity
 

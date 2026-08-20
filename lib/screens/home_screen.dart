@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:ui';
 import 'package:provider/provider.dart';
 import '../providers/app_settings_provider.dart';
 import '../widgets/search_filter_bar.dart';
@@ -134,8 +135,8 @@ class _HomeScreenState extends State<HomeScreen>
         : (isDark ? const Color(0xFF3EAF72) : const Color(0xFF2E9E5B));
     final bodyStart = isDark
         ? const Color(0xFF0F172A)
-        : const Color(0xFFF3F7FA);
-    final bodyEnd = isDark ? const Color(0xFF111827) : const Color(0xFFEAF2F8);
+        : const Color(0xFFF1F5F9);
+    final bodyEnd = isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0);
 
     return Consumer<DebtProvider>(
       builder: (context, debtProvider, child) {
@@ -153,125 +154,165 @@ class _HomeScreenState extends State<HomeScreen>
             child: Scaffold(
               key: _scaffoldKey,
               drawer: const AppDrawer(),
-              appBar: AppBar(
-                leading: IconButton(
-                  icon: const Icon(Icons.menu),
-                  onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                  tooltip: 'Menu',
-                ),
-                title: const Row(
-                  children: [
-                    Icon(Icons.menu_book_rounded, color: Color(0xFFFFD166)),
-                    SizedBox(width: 8),
-                    Text(
-                      'Debt Book',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+              body: Stack(
+                children: [
+                  // Background Blobs
+                  Positioned(
+                    top: -100,
+                    right: -100,
+                    child: _buildBlob(
+                      250,
+                      appBarColor.withValues(alpha: isDark ? 0.15 : 0.1),
                     ),
-                  ],
-                ),
-                actions: [
-                  IconButton(
-                    icon: const Icon(Icons.search),
-                    tooltip: 'Search transactions',
-                    onPressed: () {
-                      _openSearch(debtProvider);
-                    },
                   ),
-                  const SizedBox(width: 8),
+                  Positioned(
+                    bottom: 100,
+                    left: -50,
+                    child: _buildBlob(
+                      200,
+                      (isLendTab ? Colors.orange : Colors.blue)
+                          .withValues(alpha: isDark ? 0.1 : 0.05),
+                    ),
+                  ),
+                  Positioned(
+                    top: 300,
+                    right: 50,
+                    child: _buildBlob(
+                      150,
+                      Colors.purple.withValues(alpha: isDark ? 0.08 : 0.04),
+                    ),
+                  ),
+                  
+                  Column(
+                    children: [
+                      AppBar(
+                        leading: IconButton(
+                          icon: const Icon(Icons.menu),
+                          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                          tooltip: 'Menu',
+                        ),
+                        title: const Row(
+                          children: [
+                            Icon(Icons.menu_book_rounded, color: Color(0xFFFFD166)),
+                            SizedBox(width: 8),
+                            Text(
+                              'Debt Book',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        actions: [
+                          IconButton(
+                            icon: const Icon(Icons.search),
+                            tooltip: 'Search transactions',
+                            onPressed: () {
+                              _openSearch(debtProvider);
+                            },
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                        backgroundColor: appBarColor,
+                        flexibleSpace: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                appBarColor,
+                                isLendTab
+                                    ? const Color(0xFF922A36)
+                                    : const Color(0xFF267F49),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                          ),
+                        ),
+                        foregroundColor: Colors.white,
+                        bottom: TabBar(
+                          controller: _tabController,
+                          dividerColor: Colors.transparent,
+                          indicatorColor: Colors.white,
+                          indicatorWeight: 3,
+                          indicatorSize: TabBarIndicatorSize.label,
+                          labelStyle: const TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 13,
+                          ),
+                          unselectedLabelStyle: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                          tabs: [
+                            Tab(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Text(
+                                    'LENT',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  Text(
+                                    formatCurrency(debtProvider.remainingLend),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Tab(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Text(
+                                    'BORROWED',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  Text(
+                                    formatCurrency(debtProvider.remainingBorrow),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                bodyStart.withValues(alpha: 0.4),
+                                bodyEnd.withValues(alpha: 0.4),
+                              ],
+                            ),
+                          ),
+                          child: TabBarView(
+                            controller: _tabController,
+                            children: [
+                              _buildTabContent(debtProvider, true),
+                              _buildTabContent(debtProvider, false),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
-                backgroundColor: appBarColor,
-                flexibleSpace: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        appBarColor,
-                        isLendTab
-                            ? const Color(0xFF922A36)
-                            : const Color(0xFF267F49),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                  ),
-                ),
-                foregroundColor: Colors.white,
-                bottom: TabBar(
-                  controller: _tabController,
-                  dividerColor: Colors.transparent,
-                  indicatorColor: Colors.white,
-                  indicatorWeight: 3,
-                  indicatorSize: TabBarIndicatorSize.label,
-                  labelStyle: const TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 13,
-                  ),
-                  unselectedLabelStyle: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                  ),
-                  tabs: [
-                    Tab(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            'LENT',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          Text(
-                            formatCurrency(debtProvider.remainingLend),
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Tab(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            'BORROWED',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          Text(
-                            formatCurrency(debtProvider.remainingBorrow),
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              body: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [bodyStart, bodyEnd],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                ),
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _buildTabContent(debtProvider, true),
-                    _buildTabContent(debtProvider, false),
-                  ],
-                ),
               ),
               floatingActionButton: FloatingActionButton.extended(
                 onPressed: () {
@@ -286,6 +327,21 @@ class _HomeScreenState extends State<HomeScreen>
           ),
         );
       },
+    );
+  }
+
+  Widget _buildBlob(double size, Color color) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+      ),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 50, sigmaY: 50),
+        child: Container(color: Colors.transparent),
+      ),
     );
   }
 

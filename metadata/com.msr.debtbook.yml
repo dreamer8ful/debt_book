@@ -32,13 +32,13 @@ Description: |-
 
   * Contacts access is used only for optional contact selection while creating or editing a debt entry.
   * Camera and media access are used only for optional receipt/invoice image attachments.
-  * File and storage access are used only for user-initiated backup, restore, and export actions.
+  * File access is used only for user-initiated backup, restore, and export actions through the system file picker.
 
 MaintainerNotes: |-
   No ads, analytics, or external tracking SDKs are included.
 
-  Storage, contacts, and camera/media permissions are used only for user-requested features
-  (backup/restore/export, contact picker, and receipt image attachments).
+  Contacts and camera/media permissions are used only for user-requested features
+  (contact picker and receipt image attachments). Backup, restore, and export use the system file picker.
 
 RepoType: git
 Repo: https://github.com/dreamer8ful/debt_book.git

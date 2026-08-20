@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:path/path.dart' as p;
 import 'package:provider/provider.dart';
+import 'dart:ui';
 import '../providers/debt_provider.dart';
 import '../providers/app_settings_provider.dart';
 import '../services/database_helper.dart';
+import '../widgets/glass_container.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -1397,7 +1399,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<AppSettingsProvider>();
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     if (settings.initialized && !_lockStateInitialized) {
       _enableLock = settings.lockEnabled;
       _lockStateInitialized = true;
@@ -1414,209 +1419,236 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _currencyDisplayController.text = _currentCurrencyLabel(settings);
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         title: const Text('Settings'),
         backgroundColor: colorScheme.primary,
         foregroundColor: colorScheme.onPrimary,
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+      body: Stack(
         children: [
-          _buildSectionHeader('Localization'),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  TextFormField(
-                    controller: _currencyDisplayController,
-                    readOnly: true,
-                    onTap: () => _selectCurrency(settings),
-                    decoration: const InputDecoration(
-                      labelText: 'Currency',
-                      hintText: 'Search by country or currency name',
-                      prefixIcon: Icon(Icons.payments_outlined, size: 20),
-                      suffixIcon: Icon(Icons.search),
-                    ),
-                  ),
-                  if (_useCustomCurrency) ...[
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _customCurrencyCountryController,
-                      decoration: const InputDecoration(
-                        labelText: 'Custom Country Name',
-                        hintText: 'e.g. Nepal',
-                        prefixIcon: Icon(Icons.public_outlined, size: 20),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _customCurrencyCodeController,
-                      textCapitalization: TextCapitalization.characters,
-                      decoration: const InputDecoration(
-                        labelText: 'Custom Currency Code',
-                        hintText: 'e.g. NPR',
-                        prefixIcon: Icon(Icons.tag_outlined, size: 20),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _customCurrencySymbolController,
-                      decoration: const InputDecoration(
-                        labelText: 'Custom Currency Symbol',
-                        hintText: 'e.g. Rs',
-                        prefixIcon: Icon(
-                          Icons.alternate_email_outlined,
-                          size: 20,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton(
-                        onPressed: _saveCustomCurrency,
-                        child: const Text('Save Custom Currency'),
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(
-                      labelText: 'Date Format',
-                      prefixIcon: Icon(Icons.calendar_today_outlined, size: 20),
-                    ),
-                    initialValue: settings.dateFormatPattern,
-                    items: _dateFormats
-                        .map(
-                          (opt) => DropdownMenuItem(
-                            value: opt['pattern'] as String,
-                            child: Text(opt['label'] as String),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (val) {
-                      if (val == null) return;
-                      context.read<AppSettingsProvider>().setDateFormat(val);
-                    },
-                  ),
-                ],
-              ),
-            ),
+          // Background Blobs
+          Positioned(
+            top: 50,
+            right: -50,
+            child: _buildBlob(180, Colors.blue.withValues(alpha: 0.08)),
           ),
-          const SizedBox(height: 24),
-
-          _buildSectionHeader('Security'),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Form(
-                key: _formKey,
+          Positioned(
+            bottom: 50,
+            left: -30,
+            child: _buildBlob(150, Colors.purple.withValues(alpha: 0.08)),
+          ),
+          
+          ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              _buildSectionHeader('Localization'),
+              GlassContainer(
+                opacity: isDark ? 0.3 : 0.6,
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text(
-                        'Enable App Lock',
-                        style: TextStyle(fontWeight: FontWeight.w700),
+                    TextFormField(
+                      controller: _currencyDisplayController,
+                      readOnly: true,
+                      onTap: () => _selectCurrency(settings),
+                      decoration: const InputDecoration(
+                        labelText: 'Currency',
+                        hintText: 'Search by country or currency name',
+                        prefixIcon: Icon(Icons.payments_outlined, size: 20),
+                        suffixIcon: Icon(Icons.search),
                       ),
-                      subtitle: const Text('Require password to open app'),
-                      value: _enableLock,
-                      onChanged: (value) async {
-                        setState(() => _enableLock = value);
-                        if (!value && settings.hasPassword) {
-                          await context
-                              .read<AppSettingsProvider>()
-                              .clearPassword();
-                        }
-                      },
                     ),
-                    if (_enableLock) ...[
+                    if (_useCustomCurrency) ...[
                       const SizedBox(height: 12),
                       TextFormField(
-                        controller: _passwordController,
-                        obscureText: true,
+                        controller: _customCurrencyCountryController,
                         decoration: const InputDecoration(
-                          labelText: 'New Password',
-                          prefixIcon: Icon(Icons.lock_outline, size: 20),
+                          labelText: 'Custom Country Name',
+                          hintText: 'e.g. Nepal',
+                          prefixIcon: Icon(Icons.public_outlined, size: 20),
                         ),
-                        validator: (v) =>
-                            _enableLock && (v == null || v.isEmpty)
-                            ? 'Required'
-                            : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
-                        controller: _confirmPasswordController,
-                        obscureText: true,
+                        controller: _customCurrencyCodeController,
+                        textCapitalization: TextCapitalization.characters,
                         decoration: const InputDecoration(
-                          labelText: 'Confirm Password',
-                          prefixIcon: Icon(Icons.lock_reset_outlined, size: 20),
+                          labelText: 'Custom Currency Code',
+                          hintText: 'e.g. NPR',
+                          prefixIcon: Icon(Icons.tag_outlined, size: 20),
                         ),
-                        validator: (v) =>
-                            _enableLock && v != _passwordController.text
-                            ? 'No match'
-                            : null,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: _customCurrencySymbolController,
+                        decoration: const InputDecoration(
+                          labelText: 'Custom Currency Symbol',
+                          hintText: 'e.g. Rs',
+                          prefixIcon: Icon(
+                            Icons.alternate_email_outlined,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
                       SizedBox(
                         width: double.infinity,
                         child: OutlinedButton(
-                          onPressed: _savePasswordSettings,
-                          child: Text(
-                            settings.hasPassword
-                                ? 'Update Password'
-                                : 'Save Password',
-                          ),
+                          onPressed: _saveCustomCurrency,
+                          child: const Text('Save Custom Currency'),
                         ),
                       ),
-                      if (settings.hasPassword) ...[
-                        const SizedBox(height: 8),
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton(
-                            onPressed: () =>
-                                context.read<AppSettingsProvider>().lockApp(),
-                            child: const Text('Lock App Now'),
-                          ),
-                        ),
-                      ],
                     ],
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      decoration: const InputDecoration(
+                        labelText: 'Date Format',
+                        prefixIcon: Icon(Icons.calendar_today_outlined, size: 20),
+                      ),
+                      initialValue: settings.dateFormatPattern,
+                      items: _dateFormats
+                          .map(
+                            (opt) => DropdownMenuItem(
+                              value: opt['pattern'] as String,
+                              child: Text(opt['label'] as String),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (val) {
+                        if (val == null) return;
+                        context.read<AppSettingsProvider>().setDateFormat(val);
+                      },
+                    ),
                   ],
                 ),
               ),
-            ),
-          ),
-          const SizedBox(height: 24),
+              const SizedBox(height: 24),
 
-          _buildSectionHeader('Backup & Restore'),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  _cloudProviderRow(
-                    'Google Drive',
-                    Icons.cloud_outlined,
-                    Colors.blue,
-                    () => _backupDatabase('Google Drive'),
-                    () => _restoreDatabase('Google Drive'),
+              _buildSectionHeader('Security'),
+              GlassContainer(
+                opacity: isDark ? 0.3 : 0.6,
+                padding: const EdgeInsets.all(16),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text(
+                          'Enable App Lock',
+                          style: TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        subtitle: const Text('Require password to open app'),
+                        value: _enableLock,
+                        onChanged: (value) async {
+                          setState(() => _enableLock = value);
+                          if (!value && settings.hasPassword) {
+                            await context
+                                .read<AppSettingsProvider>()
+                                .clearPassword();
+                          }
+                        },
+                      ),
+                      if (_enableLock) ...[
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _passwordController,
+                          obscureText: true,
+                          decoration: const InputDecoration(
+                            labelText: 'New Password',
+                            prefixIcon: Icon(Icons.lock_outline, size: 20),
+                          ),
+                          validator: (v) =>
+                              _enableLock && (v == null || v.isEmpty)
+                              ? 'Required'
+                              : null,
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _confirmPasswordController,
+                          obscureText: true,
+                          decoration: const InputDecoration(
+                            labelText: 'Confirm Password',
+                            prefixIcon: Icon(Icons.lock_reset_outlined, size: 20),
+                          ),
+                          validator: (v) =>
+                              _enableLock && v != _passwordController.text
+                              ? 'No match'
+                              : null,
+                        ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton(
+                            onPressed: _savePasswordSettings,
+                            child: Text(
+                              settings.hasPassword
+                                  ? 'Update Password'
+                                  : 'Save Password',
+                            ),
+                          ),
+                        ),
+                        if (settings.hasPassword) ...[
+                          const SizedBox(height: 8),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton(
+                              onPressed: () =>
+                                  context.read<AppSettingsProvider>().lockApp(),
+                              child: const Text('Lock App Now'),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ],
                   ),
-                  const Divider(height: 32),
-                  _cloudProviderRow(
-                    'OneDrive',
-                    Icons.cloud_done_outlined,
-                    Colors.indigo,
-                    () => _backupDatabase('OneDrive'),
-                    () => _restoreDatabase('OneDrive'),
-                  ),
-                ],
+                ),
               ),
-            ),
+              const SizedBox(height: 24),
+
+              _buildSectionHeader('Backup & Restore'),
+              GlassContainer(
+                opacity: isDark ? 0.3 : 0.6,
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    _cloudProviderRow(
+                      'Google Drive',
+                      Icons.cloud_outlined,
+                      Colors.blue,
+                      () => _backupDatabase('Google Drive'),
+                      () => _restoreDatabase('Google Drive'),
+                    ),
+                    const Divider(height: 32),
+                    _cloudProviderRow(
+                      'OneDrive',
+                      Icons.cloud_done_outlined,
+                      Colors.indigo,
+                      () => _backupDatabase('OneDrive'),
+                      () => _restoreDatabase('OneDrive'),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 40),
+            ],
           ),
-          const SizedBox(height: 40),
         ],
+      ),
+    );
+  }
+
+  Widget _buildBlob(double size, Color color) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+      ),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 50, sigmaY: 50),
+        child: Container(color: Colors.transparent),
       ),
     );
   }

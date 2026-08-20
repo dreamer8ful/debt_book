@@ -31,13 +31,15 @@ class DebtBookApp extends StatelessWidget {
 
     final isDark = brightness == Brightness.dark;
     final scaffoldColor = isDark
-        ? const Color(0xFF0B1220)
-        : const Color(0xFFF8FAFC);
-    final cardColor = isDark ? const Color(0xFF111827) : Colors.white;
+        ? const Color(0xFF0F172A)
+        : const Color(0xFFF1F5F9);
+    final cardColor = isDark 
+        ? const Color(0xFF1E293B).withValues(alpha: 0.7)
+        : Colors.white.withValues(alpha: 0.7);
     final inputFill = isDark ? const Color(0xFF1F2937) : Colors.white;
     final borderColor = isDark
-        ? const Color(0xFF334155)
-        : const Color(0xFFE2E8F0);
+        ? const Color(0xFF334155).withValues(alpha: 0.3)
+        : const Color(0xFFE2E8F0).withValues(alpha: 0.3);
     final appBarForeground = isDark ? const Color(0xFFF8FAFC) : Colors.white;
 
     final textTheme = GoogleFonts.manropeTextTheme().copyWith(

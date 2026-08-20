@@ -155,7 +155,7 @@ Depending on platform and feature usage, the app may request access to:
 
 - Contacts, for selecting people from the address book
 - Camera or gallery, for attaching receipts or invoices
-- File access, for backup, restore, and export workflows
+- File access through the system file picker, for backup, restore, and export workflows
 
 ## Development Notes
 

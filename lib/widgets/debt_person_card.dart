@@ -8,6 +8,7 @@ import '../providers/debt_provider.dart';
 import '../screens/transaction_detail_screen.dart';
 import '../screens/update_transaction_screen.dart';
 import '../widgets/payment_dialog.dart';
+import 'glass_container.dart';
 
 class DebtPersonCard extends StatefulWidget {
   final DebtModel debt;
@@ -268,17 +269,24 @@ class _DebtPersonCardState extends State<DebtPersonCard> {
     final buttonText = widget.debt.type == 'lend' ? 'Collect' : 'Pay';
     final isPaid = remainingAmount <= 0;
     final settings = context.watch<AppSettingsProvider>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Card(
+    return GlassContainer(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      elevation: _isExpanded ? 2 : 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: _isExpanded ? mainColor.withValues(alpha: 0.3) : const Color(0xFFE2E8F0),
-          width: 1,
-        ),
+      opacity: isDark ? 0.2 : 0.5,
+      border: Border.all(
+        color: _isExpanded 
+            ? mainColor.withValues(alpha: 0.4) 
+            : (isDark ? Colors.white : Colors.black).withValues(alpha: 0.08),
+        width: 1,
       ),
+      shadow: _isExpanded 
+          ? BoxShadow(
+              color: mainColor.withValues(alpha: 0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            )
+          : null,
       child: InkWell(
         onTap: () => setState(() => _isExpanded = !_isExpanded),
         borderRadius: BorderRadius.circular(16),

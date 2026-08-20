@@ -1,0 +1,4 @@
+- Added more world currency options, including custom currency support.
+- Improved and stabilized debt tracking workflows.
+- Refined backup, restore, export, and attachment handling.
+- General quality, UI, and reliability improvements.
